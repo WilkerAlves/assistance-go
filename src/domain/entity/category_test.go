@@ -83,3 +83,58 @@ func TestShouldReturnErrorWhenAddSubcategoryWithNameAlreadyExists(t *testing.T) 
 	assert.EqualError(t, err, "already exists a subcategory with this name")
 	assert.Equal(t, 1, len(category.GetSubcategories()))
 }
+
+func TestShouldUpdateNameCategory(t *testing.T) {
+	oldName := "Categoria1"
+	newName := "NewNameCategoria"
+	category, err := entity.NewCategory(oldName, "sale", nil)
+	assert.Nil(t, err)
+
+	err = category.ChangeName(newName)
+
+	assert.Nil(t, err)
+	assert.Equal(t, newName, category.GetName())
+}
+
+func TestShouldUpdateAssistanceType(t *testing.T) {
+	oldType := "sale"
+	newType := "paid"
+	category, err := entity.NewCategory("Categoria1", oldType, nil)
+	assert.Nil(t, err)
+
+	err = category.ChangeAssistanceType(newType)
+
+	assert.Nil(t, err)
+	assert.Equal(t, newType, category.GetAssistanceType())
+}
+
+func TestShouldReturnErrorWhenUpdateNameCategoryInvalid(t *testing.T) {
+	oldName := "Categoria1"
+	category, err := entity.NewCategory(oldName, "sale", nil)
+	assert.Nil(t, err)
+
+	err = category.ChangeName(" ")
+	assert.NotNil(t, err)
+	assert.EqualError(t, err, "the category name is empty")
+
+	err = category.ChangeName("")
+	assert.NotNil(t, err)
+	assert.EqualError(t, err, "the category name is empty")
+}
+
+func TestShouldReturnErrorWhenUpdateAssistanceTypeInvalid(t *testing.T) {
+	category, err := entity.NewCategory("Categoria1", "sale", nil)
+	assert.Nil(t, err)
+
+	err = category.ChangeAssistanceType("xxxxxxxxxx")
+	assert.NotNil(t, err)
+	assert.EqualError(t, err, "the assistance type is invalid")
+
+	err = category.ChangeAssistanceType(" ")
+	assert.NotNil(t, err)
+	assert.EqualError(t, err, "the assistance type is invalid")
+
+	err = category.ChangeAssistanceType("")
+	assert.NotNil(t, err)
+	assert.EqualError(t, err, "the assistance type is invalid")
+}
