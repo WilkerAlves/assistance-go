@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/WilkerAlves/assistance-go/src/domain/entity"
-	"github.com/WilkerAlves/assistance-go/src/domain/interface"
+	"github.com/WilkerAlves/assistance-go/src/domain/interface/repository"
 )
 
 const (
@@ -20,7 +20,7 @@ type ICategoryService interface {
 }
 
 type CategoryService struct {
-	Repo _interface.ICategoryRepository
+	Repo repository.ICategoryRepository
 }
 
 func (s *CategoryService) Create(category entity.Category) error {
@@ -69,6 +69,6 @@ func (s *CategoryService) GetByName(name string) (*entity.Category, error) {
 	return category, nil
 }
 
-func NewCategoryService(repo _interface.ICategoryRepository) *CategoryService {
+func NewCategoryService(repo repository.ICategoryRepository) *CategoryService {
 	return &CategoryService{Repo: repo}
 }

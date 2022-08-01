@@ -1,4 +1,4 @@
-package _interface
+package repository
 
 import "github.com/WilkerAlves/assistance-go/src/domain/entity"
 
