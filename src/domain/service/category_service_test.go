@@ -147,3 +147,5 @@ func TestShouldUpdateCategory(t *testing.T) {
 	assert.Equal(t, "paid", newCat.GetAssistanceType())
 	assert.Equal(t, id, newCat.GetID())
 }
+
+// Usar o mock da lib

@@ -85,3 +85,5 @@ func NewCategory(name, assistanceType string, id *string) (*Category, error) {
 
 	return category, nil
 }
+
+// Quebrar o metodo de validação em dois para que não deixa a entidade invalida
