@@ -6,9 +6,11 @@ import (
 )
 
 const (
-	SALE       = "sale"
-	PAID       = "paid"
-	SUBSIDIZED = "subsidized"
+	Sale                            = "sale"
+	Paid                            = "paid"
+	Subsidized                      = "subsidized"
+	ValidateMessageToName           = "the category name is empty"
+	ValidateMessageToAssistanceType = "the assistance type is invalid"
 )
 
 type Category struct {
@@ -27,13 +29,19 @@ func (c *Category) GetName() string {
 }
 
 func (c *Category) ChangeName(newName string) error {
+	if !validateNameCategory(newName) {
+		return errors.New(ValidateMessageToName)
+	}
 	c.name = newName
-	return c.Valid()
+	return nil
 }
 
 func (c *Category) ChangeAssistanceType(newType string) error {
+	if !validateAssistanceType(newType) {
+		return errors.New(ValidateMessageToAssistanceType)
+	}
 	c.assistanceType = newType
-	return c.Valid()
+	return nil
 }
 
 func (c *Category) GetAssistanceType() string {
@@ -55,28 +63,15 @@ func (c *Category) AddSubcategory(category Category) error {
 	return nil
 }
 
-func (c *Category) Valid() error {
-	if len(strings.Trim(c.name, " ")) < 1 {
-		return errors.New("the category name is empty")
-	}
-
-	switch c.assistanceType {
-	case SALE:
-		return nil
-	case SUBSIDIZED:
-		return nil
-	case PAID:
-		return nil
-	}
-
-	return errors.New("the assistance type is invalid")
-}
-
 func NewCategory(name, assistanceType string, id *string) (*Category, error) {
 	category := &Category{name: name, assistanceType: assistanceType, subcategories: make([]Category, 0)}
 
-	if err := category.Valid(); err != nil {
-		return nil, err
+	if !validateNameCategory(category.name) {
+		return nil, errors.New(ValidateMessageToName)
+	}
+
+	if !validateAssistanceType(category.assistanceType) {
+		return nil, errors.New(ValidateMessageToAssistanceType)
 	}
 
 	if id != nil {
@@ -86,4 +81,21 @@ func NewCategory(name, assistanceType string, id *string) (*Category, error) {
 	return category, nil
 }
 
-// Quebrar o metodo de validação em dois para que não deixa a entidade invalida
+func validateNameCategory(name string) bool {
+	if len(strings.Trim(name, " ")) < 1 {
+		return false
+	}
+	return true
+}
+
+func validateAssistanceType(assistanceType string) bool {
+	switch assistanceType {
+	case Sale:
+		return true
+	case Subsidized:
+		return true
+	case Paid:
+		return true
+	}
+	return false
+}
