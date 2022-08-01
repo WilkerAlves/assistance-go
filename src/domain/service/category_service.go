@@ -37,6 +37,10 @@ func (s *CategoryService) Create(category entity.Category) error {
 }
 
 func (s *CategoryService) Update(category entity.Category) error {
+	if len(category.GetName()) < 1 {
+		return errors.New("the category ai is empty")
+	}
+
 	if cat, _ := s.Repo.FindByName(category.GetName()); cat != nil && cat.GetID() != category.GetID() {
 		return errors.New(MessageValidationCategoryName)
 	}
@@ -44,6 +48,9 @@ func (s *CategoryService) Update(category entity.Category) error {
 }
 
 func (s *CategoryService) GetById(id string) (*entity.Category, error) {
+	if len(id) < 1 {
+		return nil, errors.New("id is empty")
+	}
 	category, err := s.Repo.Find(id)
 	if err != nil {
 		return nil, err
@@ -52,6 +59,9 @@ func (s *CategoryService) GetById(id string) (*entity.Category, error) {
 }
 
 func (s *CategoryService) GetByName(name string) (*entity.Category, error) {
+	if len(name) < 1 {
+		return nil, errors.New("name is empty")
+	}
 	category, err := s.Repo.FindByName(name)
 	if err != nil {
 		return nil, err
