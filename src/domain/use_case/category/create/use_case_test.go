@@ -70,15 +70,25 @@ func (s *MyMockedCategoryService) GetByName(name string) (*entity.Category, erro
 	return nil, nil
 }
 
+type MyMockedGeneratedIdsService struct {
+	mock.Mock
+}
+
+func (m *MyMockedGeneratedIdsService) Create() (string, error) {
+	return "12345677", nil
+}
+
 func TestCreateCategoryUseCase_Execute(t *testing.T) {
 	repositoryMock := new(MyMockedCategoryRepository)
 	eventServiceMock := new(MyMockedEventService)
 	categoryServiceMock := new(MyMockedCategoryService)
+	generatedIdsServiceMock := new(MyMockedGeneratedIdsService)
 	categoryServiceMock.Repo = repositoryMock
 
 	useCase := new(create.CreateCategoryUseCase)
 	useCase.CategoryService = categoryServiceMock
 	useCase.EventService = eventServiceMock
+	useCase.GenerateIds = generatedIdsServiceMock
 
 	input := create.InputCrateCategory{
 		Name:           "CategoryUseCase",

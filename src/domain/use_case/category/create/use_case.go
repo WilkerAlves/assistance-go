@@ -11,11 +11,17 @@ import (
 type CreateCategoryUseCase struct {
 	EventService    infra.IEventService
 	CategoryService service.ICategoryService
+	GenerateIds     infra.IGeneratedIds
 }
 
 func (c *CreateCategoryUseCase) Execute(input InputCrateCategory) error {
 
-	category, err := entity.NewCategory(input.Name, input.AssistanceType, nil)
+	id, err := c.GenerateIds.Create()
+	if err != nil {
+		return err
+	}
+
+	category, err := entity.NewCategory(input.Name, input.AssistanceType, &id)
 	if err != nil {
 		return err
 	}
