@@ -104,11 +104,13 @@ func TestCreateCategoryUseCase_Execute_ShouldReturnErrorWhenCategoryNameInvalid(
 	repositoryMock := new(MyMockedCategoryRepository)
 	eventServiceMock := new(MyMockedEventService)
 	categoryServiceMock := new(MyMockedCategoryService)
+	generatedIdsServiceMock := new(MyMockedGeneratedIdsService)
 	categoryServiceMock.Repo = repositoryMock
 
 	useCase := new(create.CreateCategoryUseCase)
 	useCase.CategoryService = categoryServiceMock
 	useCase.EventService = eventServiceMock
+	useCase.GenerateIds = generatedIdsServiceMock
 
 	inputCorrect := create.InputCrateCategory{
 		Name:           "CategoryUseCase",

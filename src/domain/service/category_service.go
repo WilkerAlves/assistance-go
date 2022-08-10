@@ -41,9 +41,15 @@ func (s *categoryService) Update(category entity.Category) error {
 		return errors.New("the category ai is empty")
 	}
 
-	if cat, _ := s.repo.FindByName(category.GetName()); cat != nil && cat.GetID() != category.GetID() {
+	cat, err := s.repo.FindByName(category.GetName())
+	if err != nil {
+		return err
+	}
+
+	if cat != nil && cat.GetID() != category.GetID() {
 		return errors.New(MessageValidationCategoryName)
 	}
+
 	return s.repo.Update(category)
 }
 

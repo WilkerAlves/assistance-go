@@ -32,11 +32,11 @@ func TestShouldReturnErrorWhenCreateCategoryNameEmpty(t *testing.T) {
 
 	_, err := entity.NewCategory("", "sale", &id)
 	assert.NotNil(t, err)
-	assert.EqualError(t, err, "the category name is empty")
+	assert.EqualError(t, err, "the Category name is empty")
 
 	_, err = entity.NewCategory(" ", "sale", &id)
 	assert.NotNil(t, err)
-	assert.EqualError(t, err, "the category name is empty")
+	assert.EqualError(t, err, "the Category name is empty")
 }
 
 func TestShouldReturnErrorWhenCreateCategoryAssistanceTypeEmpty(t *testing.T) {
@@ -115,11 +115,11 @@ func TestShouldReturnErrorWhenUpdateNameCategoryInvalid(t *testing.T) {
 
 	err = category.ChangeName(" ")
 	assert.NotNil(t, err)
-	assert.EqualError(t, err, "the category name is empty")
+	assert.EqualError(t, err, "the Category name is empty")
 
 	err = category.ChangeName("")
 	assert.NotNil(t, err)
-	assert.EqualError(t, err, "the category name is empty")
+	assert.EqualError(t, err, "the Category name is empty")
 }
 
 func TestShouldReturnErrorWhenUpdateAssistanceTypeInvalid(t *testing.T) {
@@ -137,4 +137,108 @@ func TestShouldReturnErrorWhenUpdateAssistanceTypeInvalid(t *testing.T) {
 	err = category.ChangeAssistanceType("")
 	assert.NotNil(t, err)
 	assert.EqualError(t, err, "the assistance type is invalid")
+}
+
+func TestShouldBindBetweenSupplierIdAndCategory(t *testing.T) {
+	category, _ := entity.NewCategory("Categoria1", "sale", nil)
+	assert.Equal(t, len(category.GetSubcategories()), 0)
+
+	supplierId := "001756"
+
+	err := category.AddSupplier(supplierId)
+	assert.Nil(t, err)
+
+	assert.Equal(t, len(category.GetSuppliers()), 1)
+}
+
+func TestShouldBindBetweenSupplierIdAndCategories(t *testing.T) {
+	category, _ := entity.NewCategory("Categoria1", "sale", nil)
+	assert.Equal(t, len(category.GetSubcategories()), 0)
+
+	category2, _ := entity.NewCategory("Categoria2", "sale", nil)
+	assert.Equal(t, len(category2.GetSubcategories()), 0)
+
+	supplierId := "001756"
+
+	err := category.AddSupplier(supplierId)
+	assert.Nil(t, err)
+
+	err = category2.AddSupplier(supplierId)
+	assert.Nil(t, err)
+
+	assert.Equal(t, len(category.GetSuppliers()), 1)
+	assert.Equal(t, len(category2.GetSuppliers()), 1)
+}
+
+func TestShouldRemoveSubcategory(t *testing.T) {
+	categoryID := uuid.New().String()
+	sub1ID := uuid.New().String()
+	sub2ID := uuid.New().String()
+
+	category, _ := entity.NewCategory("Categoria1", "sale", &categoryID)
+
+	subcategory, _ := entity.NewCategory("Subcategoria1", "paid", &sub1ID)
+	err := category.AddSubcategory(*subcategory)
+
+	subcategory2, _ := entity.NewCategory("Subcategoria2", "paid", &sub2ID)
+	err = category.AddSubcategory(*subcategory2)
+
+	assert.Equal(t, 2, len(category.GetSubcategories()))
+
+	err = category.RemoveSubcategory(*subcategory2)
+	assert.Nil(t, err)
+
+	assert.Equal(t, 1, len(category.GetSubcategories()))
+
+	res, err := category.GetSubcategory(sub1ID)
+	assert.Nil(t, err)
+	assert.NotNil(t, res)
+
+	res, err = category.GetSubcategory(sub2ID)
+	assert.Nil(t, err)
+	assert.Nil(t, res)
+}
+
+func TestShouldInactivateCategoryAndSubcategories(t *testing.T) {
+	categoryID := uuid.New().String()
+	sub1ID := uuid.New().String()
+	sub2ID := uuid.New().String()
+
+	category, _ := entity.NewCategory("Categoria1", "sale", &categoryID)
+
+	subcategory, _ := entity.NewCategory("Subcategoria1", "paid", &sub1ID)
+	err := category.AddSubcategory(*subcategory)
+	assert.Nil(t, err)
+
+	subcategory2, _ := entity.NewCategory("Subcategoria2", "paid", &sub2ID)
+	err = category.AddSubcategory(*subcategory2)
+	assert.Nil(t, err)
+
+	category.Inactivate()
+
+	sub, _ := category.GetSubcategory(sub1ID)
+	sub2, _ := category.GetSubcategory(sub2ID)
+
+	assert.Equal(t, false, category.GetStatus())
+	assert.Equal(t, false, sub.GetStatus())
+	assert.Equal(t, false, sub2.GetStatus())
+}
+
+func TestShouldInactivateSubcategory(t *testing.T) {
+	categoryID := uuid.New().String()
+	sub1ID := uuid.New().String()
+
+	category, _ := entity.NewCategory("Categoria1", "sale", &categoryID)
+
+	subcategory, _ := entity.NewCategory("Subcategoria1", "paid", &sub1ID)
+	err := category.AddSubcategory(*subcategory)
+	assert.Nil(t, err)
+
+	err = category.InactivateSubCategory(sub1ID)
+	assert.Nil(t, err)
+
+	sub, _ := category.GetSubcategory(sub1ID)
+
+	assert.Equal(t, true, category.GetStatus())
+	assert.Equal(t, false, sub.GetStatus())
 }

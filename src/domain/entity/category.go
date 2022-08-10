@@ -2,6 +2,7 @@ package entity
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 )
 
@@ -11,13 +12,16 @@ const (
 	Subsidized                      = "subsidized"
 	ValidateMessageToName           = "the category name is empty"
 	ValidateMessageToAssistanceType = "the assistance type is invalid"
+	ValidateMessageToSupplierId     = "the supplierId is empty"
 )
 
 type Category struct {
 	id             string
 	name           string
 	assistanceType string
-	subcategories  []Category
+	subcategories  map[string]*Subcategory
+	suppliers      map[string]string
+	active         bool
 }
 
 func (c *Category) GetID() string {
@@ -28,8 +32,16 @@ func (c *Category) GetName() string {
 	return c.name
 }
 
+func (c *Category) GetStatus() bool {
+	return c.active
+}
+
+func (c *Category) GetAssistanceType() string {
+	return c.assistanceType
+}
+
 func (c *Category) ChangeName(newName string) error {
-	if !validateNameCategory(newName) {
+	if !validateStringEmpty(newName) {
 		return errors.New(ValidateMessageToName)
 	}
 	c.name = newName
@@ -44,29 +56,103 @@ func (c *Category) ChangeAssistanceType(newType string) error {
 	return nil
 }
 
-func (c *Category) GetAssistanceType() string {
-	return c.assistanceType
+func (c *Category) Inactivate() {
+	c.active = false
+	for i := range c.subcategories {
+		subcategory := c.subcategories[i]
+		subcategory.Inactivate()
+		fmt.Println(subcategory.GetStatus())
+	}
 }
 
-func (c *Category) GetSubcategories() []Category {
+// Subcategories
+
+func (c *Category) GetSubcategories() map[string]*Subcategory {
 	return c.subcategories
 }
 
-func (c *Category) AddSubcategory(category Category) error {
+func (c *Category) AddSubcategory(cat Category) error {
 	for _, subcategory := range c.subcategories {
-		if subcategory.name == category.name {
+		if subcategory.category.GetName() == cat.GetName() {
 			return errors.New("already exists a subcategory with this name")
 		}
 	}
+	c.subcategories[cat.GetID()] = &Subcategory{
+		category: &cat,
+		active:   cat.GetStatus(),
+	}
+	return nil
+}
 
-	c.subcategories = append(c.subcategories, category)
+func (c *Category) RemoveSubcategory(cat Category) error {
+	if !validateStringEmpty(cat.GetID()) {
+		return errors.New(ValidateMessageToName)
+	}
+
+	id := cat.GetID()
+
+	delete(c.subcategories, id)
+	return nil
+}
+
+func (c *Category) GetSubcategory(subID string) (*Subcategory, error) {
+	if !validateStringEmpty(subID) {
+		return nil, errors.New(ValidateMessageToName)
+	}
+
+	sub := c.subcategories[subID]
+
+	if sub == nil {
+		return nil, nil
+	}
+
+	return sub, nil
+}
+
+func (c *Category) InactivateSubCategory(subID string) error {
+	subcategory, err := c.GetSubcategory(subID)
+	if err != nil {
+		return err
+	}
+
+	subcategory.Inactivate()
+	return nil
+}
+
+// Suppliers
+
+func (c *Category) GetSuppliers() map[string]string {
+	return c.suppliers
+}
+
+func (c *Category) AddSupplier(supplierId string) error {
+	if !validateStringEmpty(supplierId) {
+		return errors.New(ValidateMessageToSupplierId)
+	}
+
+	c.suppliers[supplierId] = supplierId
+	return nil
+}
+
+func (c *Category) RemoveSupplier(supplierId string) error {
+	if !validateStringEmpty(supplierId) {
+		return errors.New(ValidateMessageToSupplierId)
+	}
+
+	delete(c.suppliers, supplierId)
 	return nil
 }
 
 func NewCategory(name, assistanceType string, id *string) (*Category, error) {
-	category := &Category{name: name, assistanceType: assistanceType, subcategories: make([]Category, 0)}
+	category := &Category{
+		name:           name,
+		assistanceType: assistanceType,
+		subcategories:  make(map[string]*Subcategory, 0),
+		suppliers:      make(map[string]string, 0),
+		active:         true,
+	}
 
-	if !validateNameCategory(category.name) {
+	if !validateStringEmpty(category.name) {
 		return nil, errors.New(ValidateMessageToName)
 	}
 
@@ -81,7 +167,7 @@ func NewCategory(name, assistanceType string, id *string) (*Category, error) {
 	return category, nil
 }
 
-func validateNameCategory(name string) bool {
+func validateStringEmpty(name string) bool {
 	if len(strings.Trim(name, " ")) < 1 {
 		return false
 	}
