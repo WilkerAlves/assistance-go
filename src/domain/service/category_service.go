@@ -19,16 +19,16 @@ type ICategoryService interface {
 	GetByName(name string) (*entity.Category, error)
 }
 
-type CategoryService struct {
-	Repo repository.ICategoryRepository
+type categoryService struct {
+	repo repository.ICategoryRepository
 }
 
-func (s *CategoryService) Create(category entity.Category) error {
-	if cat, _ := s.Repo.FindByName(category.GetName()); cat != nil {
+func (s *categoryService) Create(category entity.Category) error {
+	if cat, _ := s.repo.FindByName(category.GetName()); cat != nil {
 		return errors.New(MessageValidationCategoryName)
 	}
 
-	err := s.Repo.Create(category)
+	err := s.repo.Create(category)
 	if err != nil {
 		return fmt.Errorf("error while create category, %w", err)
 	}
@@ -36,39 +36,39 @@ func (s *CategoryService) Create(category entity.Category) error {
 	return nil
 }
 
-func (s *CategoryService) Update(category entity.Category) error {
+func (s *categoryService) Update(category entity.Category) error {
 	if len(category.GetName()) < 1 {
 		return errors.New("the category ai is empty")
 	}
 
-	if cat, _ := s.Repo.FindByName(category.GetName()); cat != nil && cat.GetID() != category.GetID() {
+	if cat, _ := s.repo.FindByName(category.GetName()); cat != nil && cat.GetID() != category.GetID() {
 		return errors.New(MessageValidationCategoryName)
 	}
-	return s.Repo.Update(category)
+	return s.repo.Update(category)
 }
 
-func (s *CategoryService) GetById(id string) (*entity.Category, error) {
+func (s *categoryService) GetById(id string) (*entity.Category, error) {
 	if len(id) < 1 {
 		return nil, errors.New("id is empty")
 	}
-	category, err := s.Repo.Find(id)
+	category, err := s.repo.Find(id)
 	if err != nil {
 		return nil, err
 	}
 	return category, nil
 }
 
-func (s *CategoryService) GetByName(name string) (*entity.Category, error) {
+func (s *categoryService) GetByName(name string) (*entity.Category, error) {
 	if len(name) < 1 {
 		return nil, errors.New("name is empty")
 	}
-	category, err := s.Repo.FindByName(name)
+	category, err := s.repo.FindByName(name)
 	if err != nil {
 		return nil, err
 	}
 	return category, nil
 }
 
-func NewCategoryService(repo repository.ICategoryRepository) *CategoryService {
-	return &CategoryService{Repo: repo}
+func NewCategoryService(repo repository.ICategoryRepository) *categoryService {
+	return &categoryService{repo: repo}
 }
