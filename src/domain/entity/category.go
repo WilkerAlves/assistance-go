@@ -13,6 +13,7 @@ const (
 	ValidateMessageToName           = "the category name is empty"
 	ValidateMessageToAssistanceType = "the assistance type is invalid"
 	ValidateMessageToSupplierId     = "the supplierId is empty"
+	ValidateMessageToStockGroup     = "the stock group is empty"
 )
 
 type Category struct {
@@ -22,6 +23,7 @@ type Category struct {
 	subcategories  map[string]*Subcategory
 	suppliers      map[string]string
 	active         bool
+	stockGroup     string
 }
 
 func (c *Category) GetID() string {
@@ -78,8 +80,9 @@ func (c *Category) AddSubcategory(cat Category) error {
 		}
 	}
 	c.subcategories[cat.GetID()] = &Subcategory{
-		category: &cat,
-		active:   cat.GetStatus(),
+		category:   &cat,
+		active:     cat.GetStatus(),
+		stockGroup: c.stockGroup,
 	}
 	return nil
 }
@@ -119,6 +122,20 @@ func (c *Category) InactivateSubCategory(subID string) error {
 	return nil
 }
 
+func (c *Category) ChangeStockGroupSubCategory(subID, stockGroup string) error {
+	subcategory, err := c.GetSubcategory(subID)
+	if err != nil {
+		return err
+	}
+
+	if !validateStringEmpty(stockGroup) {
+		return errors.New(ValidateMessageToStockGroup)
+	}
+
+	subcategory.ChangeStockGroup(stockGroup)
+	return nil
+}
+
 // Suppliers
 
 func (c *Category) GetSuppliers() map[string]string {
@@ -143,17 +160,22 @@ func (c *Category) RemoveSupplier(supplierId string) error {
 	return nil
 }
 
-func NewCategory(name, assistanceType string, id *string) (*Category, error) {
+func NewCategory(name, assistanceType, stockGroup string, id *string) (*Category, error) {
 	category := &Category{
 		name:           name,
 		assistanceType: assistanceType,
 		subcategories:  make(map[string]*Subcategory, 0),
 		suppliers:      make(map[string]string, 0),
 		active:         true,
+		stockGroup:     stockGroup,
 	}
 
 	if !validateStringEmpty(category.name) {
 		return nil, errors.New(ValidateMessageToName)
+	}
+
+	if !validateStringEmpty(category.stockGroup) {
+		return nil, errors.New(ValidateMessageToStockGroup)
 	}
 
 	if !validateAssistanceType(category.assistanceType) {

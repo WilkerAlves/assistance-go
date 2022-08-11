@@ -8,9 +8,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const StockGroup = "1901"
+
 func TestShouldCreateCategory(t *testing.T) {
 	id := uuid.New().String()
-	category, err := entity.NewCategory("Categoria1", "sale", &id)
+	category, err := entity.NewCategory("Categoria1", "sale", StockGroup, &id)
 	assert.Nil(t, err)
 	assert.Equal(t, id, category.GetID())
 	assert.Equal(t, "Categoria1", category.GetName())
@@ -19,7 +21,7 @@ func TestShouldCreateCategory(t *testing.T) {
 }
 
 func TestShouldCreateCategoryWhenNotID(t *testing.T) {
-	category, err := entity.NewCategory("Categoria1", "sale", nil)
+	category, err := entity.NewCategory("Categoria1", "sale", StockGroup, nil)
 	assert.Nil(t, err)
 	assert.Equal(t, "", category.GetID())
 	assert.Equal(t, "Categoria1", category.GetName())
@@ -30,36 +32,36 @@ func TestShouldCreateCategoryWhenNotID(t *testing.T) {
 func TestShouldReturnErrorWhenCreateCategoryNameEmpty(t *testing.T) {
 	id := uuid.New().String()
 
-	_, err := entity.NewCategory("", "sale", &id)
+	_, err := entity.NewCategory("", "sale", StockGroup, &id)
 	assert.NotNil(t, err)
-	assert.EqualError(t, err, "the Category name is empty")
+	assert.EqualError(t, err, "the category name is empty")
 
-	_, err = entity.NewCategory(" ", "sale", &id)
+	_, err = entity.NewCategory(" ", "sale", StockGroup, &id)
 	assert.NotNil(t, err)
-	assert.EqualError(t, err, "the Category name is empty")
+	assert.EqualError(t, err, "the category name is empty")
 }
 
 func TestShouldReturnErrorWhenCreateCategoryAssistanceTypeEmpty(t *testing.T) {
 	id := uuid.New().String()
 
-	_, err := entity.NewCategory("Categoria1", "", &id)
+	_, err := entity.NewCategory("Categoria1", "", StockGroup, &id)
 	assert.NotNil(t, err)
 	assert.EqualError(t, err, "the assistance type is invalid")
 
-	_, err = entity.NewCategory("Categoria1", " ", &id)
+	_, err = entity.NewCategory("Categoria1", " ", StockGroup, &id)
 	assert.NotNil(t, err)
 	assert.EqualError(t, err, "the assistance type is invalid")
 
-	_, err = entity.NewCategory("Categoria1", "xxxxxxx", &id)
+	_, err = entity.NewCategory("Categoria1", "xxxxxxx", StockGroup, &id)
 	assert.NotNil(t, err)
 	assert.EqualError(t, err, "the assistance type is invalid")
 }
 
 func TestShouldAddSubcategory(t *testing.T) {
 	id := uuid.New().String()
-	category, _ := entity.NewCategory("Categoria1", "sale", &id)
+	category, _ := entity.NewCategory("Categoria1", "sale", StockGroup, &id)
 
-	subcategory, _ := entity.NewCategory("Subcategoria1", "paid", &id)
+	subcategory, _ := entity.NewCategory("Subcategoria1", "paid", StockGroup, &id)
 	err := category.AddSubcategory(*subcategory)
 
 	assert.Nil(t, err)
@@ -68,15 +70,15 @@ func TestShouldAddSubcategory(t *testing.T) {
 
 func TestShouldReturnErrorWhenAddSubcategoryWithNameAlreadyExists(t *testing.T) {
 	id := uuid.New().String()
-	category, _ := entity.NewCategory("Categoria1", "sale", &id)
+	category, _ := entity.NewCategory("Categoria1", "sale", StockGroup, &id)
 
-	subcategory, _ := entity.NewCategory("Subcategoria1", "paid", &id)
+	subcategory, _ := entity.NewCategory("Subcategoria1", "paid", StockGroup, &id)
 	err := category.AddSubcategory(*subcategory)
 
 	assert.Nil(t, err)
 	assert.Equal(t, 1, len(category.GetSubcategories()))
 
-	subcategory2, _ := entity.NewCategory("Subcategoria1", "paid", &id)
+	subcategory2, _ := entity.NewCategory("Subcategoria1", "paid", StockGroup, &id)
 	err = category.AddSubcategory(*subcategory2)
 
 	assert.NotNil(t, err)
@@ -87,7 +89,7 @@ func TestShouldReturnErrorWhenAddSubcategoryWithNameAlreadyExists(t *testing.T) 
 func TestShouldUpdateNameCategory(t *testing.T) {
 	oldName := "Categoria1"
 	newName := "NewNameCategoria"
-	category, err := entity.NewCategory(oldName, "sale", nil)
+	category, err := entity.NewCategory(oldName, "sale", StockGroup, nil)
 	assert.Nil(t, err)
 
 	err = category.ChangeName(newName)
@@ -99,7 +101,7 @@ func TestShouldUpdateNameCategory(t *testing.T) {
 func TestShouldUpdateAssistanceType(t *testing.T) {
 	oldType := "sale"
 	newType := "paid"
-	category, err := entity.NewCategory("Categoria1", oldType, nil)
+	category, err := entity.NewCategory("Categoria1", oldType, StockGroup, nil)
 	assert.Nil(t, err)
 
 	err = category.ChangeAssistanceType(newType)
@@ -110,20 +112,20 @@ func TestShouldUpdateAssistanceType(t *testing.T) {
 
 func TestShouldReturnErrorWhenUpdateNameCategoryInvalid(t *testing.T) {
 	oldName := "Categoria1"
-	category, err := entity.NewCategory(oldName, "sale", nil)
+	category, err := entity.NewCategory(oldName, "sale", StockGroup, nil)
 	assert.Nil(t, err)
 
 	err = category.ChangeName(" ")
 	assert.NotNil(t, err)
-	assert.EqualError(t, err, "the Category name is empty")
+	assert.EqualError(t, err, "the category name is empty")
 
 	err = category.ChangeName("")
 	assert.NotNil(t, err)
-	assert.EqualError(t, err, "the Category name is empty")
+	assert.EqualError(t, err, "the category name is empty")
 }
 
 func TestShouldReturnErrorWhenUpdateAssistanceTypeInvalid(t *testing.T) {
-	category, err := entity.NewCategory("Categoria1", "sale", nil)
+	category, err := entity.NewCategory("Categoria1", "sale", StockGroup, nil)
 	assert.Nil(t, err)
 
 	err = category.ChangeAssistanceType("xxxxxxxxxx")
@@ -140,7 +142,7 @@ func TestShouldReturnErrorWhenUpdateAssistanceTypeInvalid(t *testing.T) {
 }
 
 func TestShouldBindBetweenSupplierIdAndCategory(t *testing.T) {
-	category, _ := entity.NewCategory("Categoria1", "sale", nil)
+	category, _ := entity.NewCategory("Categoria1", "sale", StockGroup, nil)
 	assert.Equal(t, len(category.GetSubcategories()), 0)
 
 	supplierId := "001756"
@@ -152,10 +154,10 @@ func TestShouldBindBetweenSupplierIdAndCategory(t *testing.T) {
 }
 
 func TestShouldBindBetweenSupplierIdAndCategories(t *testing.T) {
-	category, _ := entity.NewCategory("Categoria1", "sale", nil)
+	category, _ := entity.NewCategory("Categoria1", "sale", StockGroup, nil)
 	assert.Equal(t, len(category.GetSubcategories()), 0)
 
-	category2, _ := entity.NewCategory("Categoria2", "sale", nil)
+	category2, _ := entity.NewCategory("Categoria2", "sale", StockGroup, nil)
 	assert.Equal(t, len(category2.GetSubcategories()), 0)
 
 	supplierId := "001756"
@@ -175,12 +177,12 @@ func TestShouldRemoveSubcategory(t *testing.T) {
 	sub1ID := uuid.New().String()
 	sub2ID := uuid.New().String()
 
-	category, _ := entity.NewCategory("Categoria1", "sale", &categoryID)
+	category, _ := entity.NewCategory("Categoria1", "sale", StockGroup, &categoryID)
 
-	subcategory, _ := entity.NewCategory("Subcategoria1", "paid", &sub1ID)
+	subcategory, _ := entity.NewCategory("Subcategoria1", "paid", StockGroup, &sub1ID)
 	err := category.AddSubcategory(*subcategory)
 
-	subcategory2, _ := entity.NewCategory("Subcategoria2", "paid", &sub2ID)
+	subcategory2, _ := entity.NewCategory("Subcategoria2", "paid", StockGroup, &sub2ID)
 	err = category.AddSubcategory(*subcategory2)
 
 	assert.Equal(t, 2, len(category.GetSubcategories()))
@@ -204,13 +206,13 @@ func TestShouldInactivateCategoryAndSubcategories(t *testing.T) {
 	sub1ID := uuid.New().String()
 	sub2ID := uuid.New().String()
 
-	category, _ := entity.NewCategory("Categoria1", "sale", &categoryID)
+	category, _ := entity.NewCategory("Categoria1", "sale", StockGroup, &categoryID)
 
-	subcategory, _ := entity.NewCategory("Subcategoria1", "paid", &sub1ID)
+	subcategory, _ := entity.NewCategory("Subcategoria1", "paid", StockGroup, &sub1ID)
 	err := category.AddSubcategory(*subcategory)
 	assert.Nil(t, err)
 
-	subcategory2, _ := entity.NewCategory("Subcategoria2", "paid", &sub2ID)
+	subcategory2, _ := entity.NewCategory("Subcategoria2", "paid", StockGroup, &sub2ID)
 	err = category.AddSubcategory(*subcategory2)
 	assert.Nil(t, err)
 
@@ -228,9 +230,9 @@ func TestShouldInactivateSubcategory(t *testing.T) {
 	categoryID := uuid.New().String()
 	sub1ID := uuid.New().String()
 
-	category, _ := entity.NewCategory("Categoria1", "sale", &categoryID)
+	category, _ := entity.NewCategory("Categoria1", "sale", StockGroup, &categoryID)
 
-	subcategory, _ := entity.NewCategory("Subcategoria1", "paid", &sub1ID)
+	subcategory, _ := entity.NewCategory("Subcategoria1", "paid", StockGroup, &sub1ID)
 	err := category.AddSubcategory(*subcategory)
 	assert.Nil(t, err)
 
@@ -241,4 +243,33 @@ func TestShouldInactivateSubcategory(t *testing.T) {
 
 	assert.Equal(t, true, category.GetStatus())
 	assert.Equal(t, false, sub.GetStatus())
+}
+
+func TestShouldReturnErrorWhenCreateCategoryWithStockGroupInvalid(t *testing.T) {
+	_, err := entity.NewCategory("Categoria1", "sale", "", nil)
+	assert.NotNil(t, err)
+	assert.EqualError(t, err, "the stock group is empty")
+
+	_, err = entity.NewCategory("Categoria1", "sale", " ", nil)
+	assert.NotNil(t, err)
+	assert.EqualError(t, err, "the stock group is empty")
+}
+
+func TestShouldChangedStockGroupSubcategory(t *testing.T) {
+	categoryID := uuid.New().String()
+	category2ID := uuid.New().String()
+
+	category, _ := entity.NewCategory("Categoria1", "sale", StockGroup, &categoryID)
+	category2, _ := entity.NewCategory("Categoria2", "paid", StockGroup, &category2ID)
+
+	_ = category.AddSubcategory(*category2)
+
+	subcategory, _ := category.GetSubcategory(category2ID)
+	assert.Equal(t, StockGroup, subcategory.GetStockGroup())
+
+	err := category.ChangeStockGroupSubCategory(category2ID, "1234")
+	assert.Nil(t, err)
+
+	subcategory, _ = category.GetSubcategory(category2ID)
+	assert.Equal(t, "1234", subcategory.GetStockGroup())
 }
