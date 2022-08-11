@@ -17,6 +17,7 @@ type ICategoryService interface {
 	Update(category entity.Category) error
 	GetById(id string) (*entity.Category, error)
 	GetByName(name string) (*entity.Category, error)
+	GetAll() ([]*entity.Category, error)
 }
 
 type categoryService struct {
@@ -69,6 +70,14 @@ func (s *categoryService) GetByName(name string) (*entity.Category, error) {
 		return nil, errors.New("name is empty")
 	}
 	category, err := s.repo.FindByName(name)
+	if err != nil {
+		return nil, err
+	}
+	return category, nil
+}
+
+func (s *categoryService) GetAll() ([]*entity.Category, error) {
+	category, err := s.repo.FindAll()
 	if err != nil {
 		return nil, err
 	}

@@ -7,4 +7,5 @@ type ICategoryRepository interface {
 	Update(category entity.Category) error
 	Find(id string) (*entity.Category, error)
 	FindByName(name string) (*entity.Category, error)
+	FindAll() ([]*entity.Category, error)
 }

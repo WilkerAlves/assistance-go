@@ -1,4 +1,4 @@
-package create_test
+package find_test
 
 import (
 	"errors"
@@ -7,7 +7,8 @@ import (
 
 	"github.com/WilkerAlves/assistance-go/src/domain/entity"
 	"github.com/WilkerAlves/assistance-go/src/domain/interface/repository"
-	"github.com/WilkerAlves/assistance-go/src/domain/use_case/category/create"
+	"github.com/WilkerAlves/assistance-go/src/domain/use_case/category/find"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -36,15 +37,12 @@ func (m *MyMockedCategoryRepository) FindByName(name string) (*entity.Category, 
 	return nil, nil
 }
 func (m *MyMockedCategoryRepository) FindAll() ([]*entity.Category, error) {
-	return nil, nil
-}
+	output := make([]*entity.Category, 0)
+	for _, category := range m.DB {
+		output = append(output, &category)
+	}
 
-type MyMockedEventService struct {
-	mock.Mock
-}
-
-func (m *MyMockedEventService) Send(eventName string, body interface{}) bool {
-	return true
+	return output, nil
 }
 
 type MyMockedCategoryService struct {
@@ -73,72 +71,48 @@ func (s *MyMockedCategoryService) GetByName(name string) (*entity.Category, erro
 	return nil, nil
 }
 func (s *MyMockedCategoryService) GetAll() ([]*entity.Category, error) {
-	return nil, nil
+	return s.Repo.FindAll()
 }
 
-type MyMockedGeneratedIdsService struct {
-	mock.Mock
-}
+func TestShouldReturnListOutputCategory(t *testing.T) {
+	repositoryMock := new(MyMockedCategoryRepository)
+	categoryServiceMock := new(MyMockedCategoryService)
+	categoryServiceMock.Repo = repositoryMock
 
-func (m *MyMockedGeneratedIdsService) Create() (string, error) {
-	return "12345677", nil
+	id := uuid.New().String()
+	id2 := uuid.New().String()
+	name := "CategoryName1"
+	name2 := "CategoryName2"
+	category, _ := entity.NewCategory(name, "sale", "1234", &id)
+	category2, _ := entity.NewCategory(name2, "paid", "56789", &id2)
+
+	_ = categoryServiceMock.Repo.Create(*category)
+	_ = categoryServiceMock.Repo.Create(*category2)
+
+	useCase := find.NewFindCategoryUseCase(categoryServiceMock)
+	outputCategories, err := useCase.Execute()
+	assert.Nil(t, err)
+	assert.Equal(t, 2, len(outputCategories))
 }
 
 func TestCreateCategoryUseCase_Execute(t *testing.T) {
 	repositoryMock := new(MyMockedCategoryRepository)
-	eventServiceMock := new(MyMockedEventService)
 	categoryServiceMock := new(MyMockedCategoryService)
-	generatedIdsServiceMock := new(MyMockedGeneratedIdsService)
 	categoryServiceMock.Repo = repositoryMock
 
-	useCase := new(create.CreateCategoryUseCase)
-	useCase.CategoryService = categoryServiceMock
-	useCase.EventService = eventServiceMock
-	useCase.GenerateIds = generatedIdsServiceMock
+	id := uuid.New().String()
+	name := "CategoryName1"
+	category, _ := entity.NewCategory(name, "sale", "1234", &id)
 
-	input := create.InputCrateCategory{
-		Name:           "CategoryUseCase",
-		AssistanceType: "sale",
-	}
+	_ = categoryServiceMock.Repo.Create(*category)
 
-	err := useCase.Execute(input)
+	_ = category.AddSupplier("001756")
+	_ = category.AddSupplier("001757")
 
+	useCase := find.NewFindCategoryUseCase(categoryServiceMock)
+	outputCategories, err := useCase.Execute()
 	assert.Nil(t, err)
-}
-
-func TestCreateCategoryUseCase_Execute_ShouldReturnErrorWhenCategoryNameInvalid(t *testing.T) {
-	repositoryMock := new(MyMockedCategoryRepository)
-	eventServiceMock := new(MyMockedEventService)
-	categoryServiceMock := new(MyMockedCategoryService)
-	generatedIdsServiceMock := new(MyMockedGeneratedIdsService)
-	categoryServiceMock.Repo = repositoryMock
-
-	useCase := new(create.CreateCategoryUseCase)
-	useCase.CategoryService = categoryServiceMock
-	useCase.EventService = eventServiceMock
-	useCase.GenerateIds = generatedIdsServiceMock
-
-	inputCorrect := create.InputCrateCategory{
-		Name:           "CategoryUseCase",
-		AssistanceType: "sale",
-	}
-	inputNameInvalid := create.InputCrateCategory{
-		Name:           "",
-		AssistanceType: "sale",
-	}
-	inputNameAlreadyExists := create.InputCrateCategory{
-		Name:           "CategoryUseCase",
-		AssistanceType: "sale",
-	}
-
-	err := useCase.Execute(inputCorrect)
-	assert.Nil(t, err)
-
-	err = useCase.Execute(inputNameInvalid)
-	assert.NotNil(t, err)
-	assert.EqualError(t, err, "the category name is empty")
-
-	err = useCase.Execute(inputNameAlreadyExists)
-	assert.NotNil(t, err)
-	assert.EqualError(t, err, "the category name already exists")
+	assert.Equal(t, 1, len(outputCategories))
+	assert.Equal(t, name, outputCategories[0].Name)
+	assert.Equal(t, 2, outputCategories[0].SupplierTotal)
 }

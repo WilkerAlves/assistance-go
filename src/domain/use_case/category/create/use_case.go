@@ -21,7 +21,7 @@ func (c *CreateCategoryUseCase) Execute(input InputCrateCategory) error {
 		return err
 	}
 
-	category, err := entity.NewCategory(input.Name, input.AssistanceType, &id)
+	category, err := entity.NewCategory(input.Name, input.AssistanceType, "1234", &id)
 	if err != nil {
 		return err
 	}

@@ -61,27 +61,36 @@ func (m *MyMockedCategoryRepository) FindByName(name string) (*entity.Category, 
 	return nil, nil
 }
 
+func (m *MyMockedCategoryRepository) FindAll() ([]*entity.Category, error) {
+	output := make([]*entity.Category, 0)
+	for _, category := range m.DB {
+		output = append(output, &category)
+	}
+
+	return output, nil
+}
+
 func TestShouldCreateCategory(t *testing.T) {
 	repositoryMock := new(MyMockedCategoryRepository)
 	repositoryMock.DB = make([]entity.Category, 0)
 	categoryService := service.NewCategoryService(repositoryMock)
-	category, _ := entity.NewCategory("CategoryName", "sale", nil)
+	category, _ := entity.NewCategory("CategoryName", "sale", "1234", nil)
 
 	err := categoryService.Create(*category)
 
 	assert.Nil(t, err)
 }
 
-func TestShouldReturnErroWhenCreateCategoryWithNameAlreadyExists(t *testing.T) {
+func TestShouldReturnErrorWhenCreateCategoryWithNameAlreadyExists(t *testing.T) {
 	repositoryMock := new(MyMockedCategoryRepository)
 	repositoryMock.DB = make([]entity.Category, 0)
 	categoryService := service.NewCategoryService(repositoryMock)
-	category, _ := entity.NewCategory("CategoryName", "sale", nil)
+	category, _ := entity.NewCategory("CategoryName", "sale", "1234", nil)
 
 	err := categoryService.Create(*category)
 	assert.Nil(t, err)
 
-	category2, _ := entity.NewCategory("CategoryName", "sale", nil)
+	category2, _ := entity.NewCategory("CategoryName", "sale", "1234", nil)
 	err = categoryService.Create(*category2)
 	assert.NotNil(t, err)
 	assert.EqualError(t, err, "the category name already exists")
@@ -93,7 +102,7 @@ func TestShouldReturnCategoryEntityWhenSearchByName(t *testing.T) {
 	categoryService := service.NewCategoryService(repositoryMock)
 	name := "CategoryName1"
 
-	category, _ := entity.NewCategory(name, "sale", nil)
+	category, _ := entity.NewCategory(name, "sale", "1234", nil)
 	_ = categoryService.Create(*category)
 
 	cat, err := categoryService.GetByName(name)
@@ -111,7 +120,7 @@ func TestShouldReturnCategoryEntityWhenSearchById(t *testing.T) {
 	name := "CategoryName1"
 	id := uuid.New().String()
 
-	category, _ := entity.NewCategory(name, "sale", &id)
+	category, _ := entity.NewCategory(name, "sale", "1234", &id)
 	_ = categoryService.Create(*category)
 
 	cat, err := categoryService.GetById(id)
@@ -128,7 +137,7 @@ func TestShouldUpdateCategory(t *testing.T) {
 	categoryService := service.NewCategoryService(repositoryMock)
 	id := uuid.New().String()
 	name := "CategoryName1"
-	category, _ := entity.NewCategory(name, "sale", &id)
+	category, _ := entity.NewCategory(name, "sale", "1234", &id)
 	_ = categoryService.Create(*category)
 	cat, err := categoryService.GetByName(name)
 
@@ -148,4 +157,21 @@ func TestShouldUpdateCategory(t *testing.T) {
 	assert.Equal(t, id, newCat.GetID())
 }
 
-// Usar o mock da lib
+func TestShouldReturnListCategories(t *testing.T) {
+	repositoryMock := new(MyMockedCategoryRepository)
+	repositoryMock.DB = make([]entity.Category, 0)
+	categoryService := service.NewCategoryService(repositoryMock)
+
+	id := uuid.New().String()
+	id2 := uuid.New().String()
+	name := "CategoryName1"
+	name2 := "CategoryName2"
+	category, _ := entity.NewCategory(name, "sale", "1234", &id)
+	category2, _ := entity.NewCategory(name2, "paid", "56789", &id2)
+	_ = categoryService.Create(*category)
+	_ = categoryService.Create(*category2)
+
+	categories, err := categoryService.GetAll()
+	assert.Nil(t, err)
+	assert.Equal(t, 2, len(categories))
+}
