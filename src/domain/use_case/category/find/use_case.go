@@ -1,13 +1,17 @@
 package find
 
-import "github.com/WilkerAlves/assistance-go/src/domain/service"
+import (
+	"github.com/WilkerAlves/assistance-go/src/domain/service"
+)
 
 type FindCategoryUseCase struct {
 	categoryService service.ICategoryService
 }
 
-func (f *FindCategoryUseCase) Execute() ([]OutputCategory, error) {
-	categories, err := f.categoryService.GetAll()
+func (f *FindCategoryUseCase) Execute(inputFilterCategory InputFilterCategory) ([]OutputCategory, error) {
+	categoryFilter := service.NewCategoryFiltersDTO(inputFilterCategory.Active)
+
+	categories, err := f.categoryService.GetAll(categoryFilter)
 	if err != nil {
 		return nil, err
 	}

@@ -3,6 +3,7 @@ package find_test
 import (
 	"errors"
 	"fmt"
+	"github.com/WilkerAlves/assistance-go/src/domain/service"
 	"testing"
 
 	"github.com/WilkerAlves/assistance-go/src/domain/entity"
@@ -22,12 +23,41 @@ func (m *MyMockedCategoryRepository) Create(category entity.Category) error {
 	m.DB = append(m.DB, category)
 	return nil
 }
+
 func (m *MyMockedCategoryRepository) Update(category entity.Category) error {
-	return nil
+	for i, oldCategory := range m.DB {
+		if oldCategory.GetID() == category.GetID() {
+			err := oldCategory.ChangeName(category.GetName())
+			if err != nil {
+				return err
+			}
+
+			err = oldCategory.ChangeAssistanceType(category.GetAssistanceType())
+			if err != nil {
+				return err
+			}
+
+			if category.GetStatus() == false {
+				oldCategory.Inactivate()
+			}
+
+			m.DB[i] = oldCategory
+
+			return nil
+		}
+	}
+	return errors.New(fmt.Sprintf("category not found. id: %s", category.GetID()))
 }
+
 func (m *MyMockedCategoryRepository) Find(id string) (*entity.Category, error) {
+	for _, category := range m.DB {
+		if category.GetID() == id {
+			return &category, nil
+		}
+	}
 	return nil, nil
 }
+
 func (m *MyMockedCategoryRepository) FindByName(name string) (*entity.Category, error) {
 	for _, category := range m.DB {
 		if category.GetName() == name {
@@ -36,10 +66,21 @@ func (m *MyMockedCategoryRepository) FindByName(name string) (*entity.Category, 
 	}
 	return nil, nil
 }
-func (m *MyMockedCategoryRepository) FindAll() ([]*entity.Category, error) {
+
+func (m *MyMockedCategoryRepository) FindAll(active *bool) ([]*entity.Category, error) {
 	output := make([]*entity.Category, 0)
-	for _, category := range m.DB {
-		output = append(output, &category)
+	if active == nil {
+		for _, category := range m.DB {
+			output = append(output, &category)
+		}
+
+		return output, nil
+	}
+
+	for i := range m.DB {
+		if m.DB[i].GetStatus() == *active {
+			output = append(output, &m.DB[i])
+		}
 	}
 
 	return output, nil
@@ -70,8 +111,8 @@ func (s *MyMockedCategoryService) GetById(id string) (*entity.Category, error) {
 func (s *MyMockedCategoryService) GetByName(name string) (*entity.Category, error) {
 	return nil, nil
 }
-func (s *MyMockedCategoryService) GetAll() ([]*entity.Category, error) {
-	return s.Repo.FindAll()
+func (s *MyMockedCategoryService) GetAll(filters *service.CategoryFiltersDTO) ([]*entity.Category, error) {
+	return s.Repo.FindAll(filters.Active)
 }
 
 func TestShouldReturnListOutputCategory(t *testing.T) {
@@ -90,12 +131,13 @@ func TestShouldReturnListOutputCategory(t *testing.T) {
 	_ = categoryServiceMock.Repo.Create(*category2)
 
 	useCase := find.NewFindCategoryUseCase(categoryServiceMock)
-	outputCategories, err := useCase.Execute()
+	inputFilterCategory := find.InputFilterCategory{}
+	outputCategories, err := useCase.Execute(inputFilterCategory)
 	assert.Nil(t, err)
 	assert.Equal(t, 2, len(outputCategories))
 }
 
-func TestCreateCategoryUseCase_Execute(t *testing.T) {
+func TestShouldFindCategoryUseCase_Execute(t *testing.T) {
 	repositoryMock := new(MyMockedCategoryRepository)
 	categoryServiceMock := new(MyMockedCategoryService)
 	categoryServiceMock.Repo = repositoryMock
@@ -110,9 +152,37 @@ func TestCreateCategoryUseCase_Execute(t *testing.T) {
 	_ = category.AddSupplier("001757")
 
 	useCase := find.NewFindCategoryUseCase(categoryServiceMock)
-	outputCategories, err := useCase.Execute()
+	inputFilterCategory := find.InputFilterCategory{}
+	outputCategories, err := useCase.Execute(inputFilterCategory)
 	assert.Nil(t, err)
 	assert.Equal(t, 1, len(outputCategories))
 	assert.Equal(t, name, outputCategories[0].Name)
 	assert.Equal(t, 2, outputCategories[0].SupplierTotal)
+}
+
+func TestShouldReturnListActiveCategoriesFindUseCase(t *testing.T) {
+	repositoryMock := new(MyMockedCategoryRepository)
+	categoryServiceMock := new(MyMockedCategoryService)
+	categoryServiceMock.Repo = repositoryMock
+
+	id := uuid.New().String()
+	id2 := uuid.New().String()
+	name := "CategoryName1"
+	name2 := "CategoryName2"
+	category, _ := entity.NewCategory(name, "sale", "1234", &id)
+	category2, _ := entity.NewCategory(name2, "sale", "1234", &id2)
+
+	_ = categoryServiceMock.Repo.Create(*category)
+	_ = categoryServiceMock.Repo.Create(*category2)
+
+	category2.Inactivate()
+	_ = categoryServiceMock.Repo.Update(*category2)
+
+	useCase := find.NewFindCategoryUseCase(categoryServiceMock)
+	active := true
+	inputFilterCategory := find.InputFilterCategory{Active: &active}
+	outputCategories, err := useCase.Execute(inputFilterCategory)
+	assert.Nil(t, err)
+	assert.Equal(t, 1, len(outputCategories))
+	assert.Equal(t, name, outputCategories[0].Name)
 }

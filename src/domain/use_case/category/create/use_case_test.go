@@ -3,6 +3,7 @@ package create_test
 import (
 	"errors"
 	"fmt"
+	"github.com/WilkerAlves/assistance-go/src/domain/service"
 	"testing"
 
 	"github.com/WilkerAlves/assistance-go/src/domain/entity"
@@ -35,7 +36,7 @@ func (m *MyMockedCategoryRepository) FindByName(name string) (*entity.Category, 
 	}
 	return nil, nil
 }
-func (m *MyMockedCategoryRepository) FindAll() ([]*entity.Category, error) {
+func (m *MyMockedCategoryRepository) FindAll(active *bool) ([]*entity.Category, error) {
 	return nil, nil
 }
 
@@ -72,7 +73,7 @@ func (s *MyMockedCategoryService) GetById(id string) (*entity.Category, error) {
 func (s *MyMockedCategoryService) GetByName(name string) (*entity.Category, error) {
 	return nil, nil
 }
-func (s *MyMockedCategoryService) GetAll() ([]*entity.Category, error) {
+func (s *MyMockedCategoryService) GetAll(filters *service.CategoryFiltersDTO) ([]*entity.Category, error) {
 	return nil, nil
 }
 
