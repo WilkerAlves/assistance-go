@@ -69,8 +69,20 @@ func (c *Category) Inactivate() {
 
 // Subcategories
 
-func (c *Category) GetSubcategories() map[string]*Subcategory {
-	return c.subcategories
+func (c *Category) GetSubcategories(filters *SubCategoryFiltersDTO) map[string]*Subcategory {
+	if filters == nil {
+		return c.subcategories
+	}
+
+	subcategories := make(map[string]*Subcategory, 0)
+
+	for _, subcategory := range c.subcategories {
+		if subcategory.GetStatus() == *filters.active {
+			subcategories[subcategory.category.GetID()] = subcategory
+		}
+	}
+
+	return subcategories
 }
 
 func (c *Category) AddSubcategory(cat Category) error {

@@ -24,6 +24,10 @@ type categoryService struct {
 	repo repository.ICategoryRepository
 }
 
+type categoryFiltersDTO struct {
+	active *bool
+}
+
 func (s *categoryService) Create(category entity.Category) error {
 	if cat, _ := s.repo.FindByName(category.GetName()); cat != nil {
 		return errors.New(MessageValidationCategoryName)
@@ -76,14 +80,31 @@ func (s *categoryService) GetByName(name string) (*entity.Category, error) {
 	return category, nil
 }
 
-func (s *categoryService) GetAll() ([]*entity.Category, error) {
-	category, err := s.repo.FindAll()
+func (s *categoryService) GetAll(filters *categoryFiltersDTO) ([]*entity.Category, error) {
+	var categories []*entity.Category
+	var err error
+
+	if filters == nil {
+		categories, err = s.repo.FindAll(nil)
+		if err != nil {
+			return nil, err
+		}
+		return categories, nil
+	}
+
+	categories, err = s.repo.FindAll(filters.active)
 	if err != nil {
 		return nil, err
 	}
-	return category, nil
+	return categories, nil
 }
 
 func NewCategoryService(repo repository.ICategoryRepository) *categoryService {
 	return &categoryService{repo: repo}
+}
+
+func NewCategoryFiltersDTO(active *bool) *categoryFiltersDTO {
+	return &categoryFiltersDTO{
+		active: active,
+	}
 }
