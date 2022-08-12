@@ -31,7 +31,7 @@ func TestShouldReturnListOutputCategory(t *testing.T) {
 	assert.Equal(t, 2, len(outputCategories))
 }
 
-func TestCreateCategoryUseCase_Execute(t *testing.T) {
+func TestShouldReturnListOutputCategoryWithFieldsValid(t *testing.T) {
 	repositoryMock := new(mocks.MyMockedCategoryRepository)
 	categoryServiceMock := new(mocks.MyMockedCategoryService)
 	categoryServiceMock.Repo = repositoryMock

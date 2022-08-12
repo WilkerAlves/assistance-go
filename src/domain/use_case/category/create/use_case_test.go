@@ -6,30 +6,13 @@ import (
 	"github.com/WilkerAlves/assistance-go/src/domain/mocks"
 	"github.com/WilkerAlves/assistance-go/src/domain/use_case/category/create"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 )
-
-type MyMockedEventService struct {
-	mock.Mock
-}
-
-func (m *MyMockedEventService) Send(eventName string, body interface{}) bool {
-	return true
-}
-
-type MyMockedGeneratedIdsService struct {
-	mock.Mock
-}
-
-func (m *MyMockedGeneratedIdsService) Create() (string, error) {
-	return "12345677", nil
-}
 
 func TestCreateCategoryUseCase_Execute(t *testing.T) {
 	repositoryMock := new(mocks.MyMockedCategoryRepository)
-	eventServiceMock := new(MyMockedEventService)
+	eventServiceMock := new(mocks.MyMockedEventService)
 	categoryServiceMock := new(mocks.MyMockedCategoryService)
-	generatedIdsServiceMock := new(MyMockedGeneratedIdsService)
+	generatedIdsServiceMock := new(mocks.MyMockedGeneratedIdsService)
 	categoryServiceMock.Repo = repositoryMock
 
 	useCase := new(create.CreateCategoryUseCase)
@@ -49,9 +32,9 @@ func TestCreateCategoryUseCase_Execute(t *testing.T) {
 
 func TestCreateCategoryUseCase_Execute_ShouldReturnErrorWhenCategoryNameInvalid(t *testing.T) {
 	repositoryMock := new(mocks.MyMockedCategoryRepository)
-	eventServiceMock := new(MyMockedEventService)
+	eventServiceMock := new(mocks.MyMockedEventService)
 	categoryServiceMock := new(mocks.MyMockedCategoryService)
-	generatedIdsServiceMock := new(MyMockedGeneratedIdsService)
+	generatedIdsServiceMock := new(mocks.MyMockedGeneratedIdsService)
 	categoryServiceMock.Repo = repositoryMock
 
 	useCase := new(create.CreateCategoryUseCase)
