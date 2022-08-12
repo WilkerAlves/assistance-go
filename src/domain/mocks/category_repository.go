@@ -31,6 +31,10 @@ func (m *MyMockedCategoryRepository) Update(category entity.Category) error {
 				return err
 			}
 
+			if category.GetStatus() == false {
+				oldCategory.Inactivate()
+			}
+
 			m.DB[i] = oldCategory
 
 			return nil
@@ -57,10 +61,20 @@ func (m *MyMockedCategoryRepository) FindByName(name string) (*entity.Category, 
 	return nil, nil
 }
 
-func (m *MyMockedCategoryRepository) FindAll() ([]*entity.Category, error) {
+func (m *MyMockedCategoryRepository) FindAll(active *bool) ([]*entity.Category, error) {
 	output := make([]*entity.Category, 0)
-	for _, category := range m.DB {
-		output = append(output, &category)
+	if active == nil {
+		for _, category := range m.DB {
+			output = append(output, &category)
+		}
+
+		return output, nil
+	}
+
+	for i := range m.DB {
+		if m.DB[i].GetStatus() == *active {
+			output = append(output, &m.DB[i])
+		}
 	}
 
 	return output, nil

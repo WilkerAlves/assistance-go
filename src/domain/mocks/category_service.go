@@ -6,6 +6,7 @@ import (
 
 	"github.com/WilkerAlves/assistance-go/src/domain/entity"
 	"github.com/WilkerAlves/assistance-go/src/domain/interface/repository"
+	"github.com/WilkerAlves/assistance-go/src/domain/service"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -25,19 +26,15 @@ func (s *MyMockedCategoryService) Create(category entity.Category) error {
 	}
 	return nil
 }
-
 func (s *MyMockedCategoryService) Update(category entity.Category) error {
 	return nil
 }
-
 func (s *MyMockedCategoryService) GetById(id string) (*entity.Category, error) {
 	return nil, nil
 }
-
 func (s *MyMockedCategoryService) GetByName(name string) (*entity.Category, error) {
 	return nil, nil
 }
-
-func (s *MyMockedCategoryService) GetAll() ([]*entity.Category, error) {
-	return s.Repo.FindAll()
+func (s *MyMockedCategoryService) GetAll(filters *service.CategoryFiltersDTO) ([]*entity.Category, error) {
+	return s.Repo.FindAll(filters.Active)
 }
