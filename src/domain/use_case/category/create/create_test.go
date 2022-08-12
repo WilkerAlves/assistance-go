@@ -3,6 +3,7 @@ package create_test
 import (
 	"testing"
 
+	"github.com/WilkerAlves/assistance-go/src/domain/dto"
 	"github.com/WilkerAlves/assistance-go/src/domain/mocks"
 	"github.com/WilkerAlves/assistance-go/src/domain/use_case/category/create"
 	"github.com/stretchr/testify/suite"
@@ -31,7 +32,7 @@ func (c *CreateCategoryUseCaseTestSuite) TestShouldNotReturnErrorWhenCreateCreat
 		c.generateIds,
 	)
 
-	input := create.InputCrateCategory{
+	input := dto.InputCrateCategory{
 		Name:           "CategoryUseCase",
 		AssistanceType: "sale",
 	}
@@ -48,15 +49,15 @@ func (c *CreateCategoryUseCaseTestSuite) TestShouldReturnErrorWhenAttemptCreateC
 		c.generateIds,
 	)
 
-	inputCorrect := create.InputCrateCategory{
+	inputCorrect := dto.InputCrateCategory{
 		Name:           "CategoryUseCase",
 		AssistanceType: "sale",
 	}
-	inputNameInvalid := create.InputCrateCategory{
+	inputNameInvalid := dto.InputCrateCategory{
 		Name:           "",
 		AssistanceType: "sale",
 	}
-	inputNameAlreadyExists := create.InputCrateCategory{
+	inputNameAlreadyExists := dto.InputCrateCategory{
 		Name:           "CategoryUseCase",
 		AssistanceType: "sale",
 	}

@@ -25,13 +25,3 @@ func (s *Subcategory) GetStockGroup() string {
 func (s *Subcategory) GetName() string {
 	return s.category.name
 }
-
-type SubCategoryFiltersDTO struct {
-	active *bool
-}
-
-func NewSubCategoryFiltersDTO(active *bool) *SubCategoryFiltersDTO {
-	return &SubCategoryFiltersDTO{
-		active: active,
-	}
-}

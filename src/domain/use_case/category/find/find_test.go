@@ -3,81 +3,84 @@ package find_test
 import (
 	"testing"
 
+	"github.com/WilkerAlves/assistance-go/src/domain/dto"
 	"github.com/WilkerAlves/assistance-go/src/domain/entity"
 	"github.com/WilkerAlves/assistance-go/src/domain/mocks"
 	"github.com/WilkerAlves/assistance-go/src/domain/use_case/category/find"
-	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 )
 
-func TestShouldReturnListOutputCategory(t *testing.T) {
-	repositoryMock := new(mocks.MyMockedCategoryRepository)
-	categoryServiceMock := new(mocks.MyMockedCategoryService)
-	categoryServiceMock.Repo = repositoryMock
-
-	id := uuid.New().String()
-	id2 := uuid.New().String()
-	name := "CategoryName1"
-	name2 := "CategoryName2"
-	category, _ := entity.NewCategory(name, "sale", "1234", &id)
-	category2, _ := entity.NewCategory(name2, "paid", "56789", &id2)
-
-	_ = categoryServiceMock.Repo.Create(*category)
-	_ = categoryServiceMock.Repo.Create(*category2)
-
-	useCase := find.NewFindCategoryUseCase(categoryServiceMock)
-	inputFilterCategory := find.InputFilterCategory{}
-	outputCategories, err := useCase.Execute(inputFilterCategory)
-	assert.Nil(t, err)
-	assert.Equal(t, 2, len(outputCategories))
+type FindCategoryUseCaseTestSuite struct {
+	suite.Suite
+	categoryService *mocks.MyMockedCategoryService
 }
 
-func TestShouldFindCategoryUseCase_Execute(t *testing.T) {
+func (f *FindCategoryUseCaseTestSuite) SetupTest() {
+	f.categoryService = new(mocks.MyMockedCategoryService)
+
 	repositoryMock := new(mocks.MyMockedCategoryRepository)
-	categoryServiceMock := new(mocks.MyMockedCategoryService)
-	categoryServiceMock.Repo = repositoryMock
+	f.categoryService.Repo = repositoryMock
 
-	id := uuid.New().String()
-	name := "CategoryName1"
-	category, _ := entity.NewCategory(name, "sale", "1234", &id)
+	id := "1"
+	category1, _ := entity.NewCategory("CategoryName1", "sale", "1234", &id)
+	_ = category1.AddSupplier("001756")
+	_ = category1.AddSupplier("001757")
 
-	_ = categoryServiceMock.Repo.Create(*category)
+	id2 := "2"
+	category2, _ := entity.NewCategory("CategoryName2", "paid", "5678", &id2)
 
-	_ = category.AddSupplier("001756")
-	_ = category.AddSupplier("001757")
+	id3 := "3"
+	category3, _ := entity.NewCategory("CategoryName3", "subsidized", "9123", &id3)
 
-	useCase := find.NewFindCategoryUseCase(categoryServiceMock)
-	inputFilterCategory := find.InputFilterCategory{}
-	outputCategories, err := useCase.Execute(inputFilterCategory)
-	assert.Nil(t, err)
-	assert.Equal(t, 1, len(outputCategories))
-	assert.Equal(t, name, outputCategories[0].Name)
-	assert.Equal(t, 2, outputCategories[0].SupplierTotal)
+	_ = f.categoryService.Repo.Create(*category1)
+	_ = f.categoryService.Repo.Create(*category2)
+	_ = f.categoryService.Repo.Create(*category3)
 }
 
-func TestShouldReturnListActiveCategoriesFindUseCase(t *testing.T) {
-	repositoryMock := new(mocks.MyMockedCategoryRepository)
-	categoryServiceMock := new(mocks.MyMockedCategoryService)
-	categoryServiceMock.Repo = repositoryMock
+func (f *FindCategoryUseCaseTestSuite) TearDownTestSuite() {
+	f.categoryService = nil
+}
 
-	id := uuid.New().String()
-	id2 := uuid.New().String()
-	name := "CategoryName1"
-	name2 := "CategoryName2"
-	category, _ := entity.NewCategory(name, "sale", "1234", &id)
-	category2, _ := entity.NewCategory(name2, "sale", "1234", &id2)
+func (f *FindCategoryUseCaseTestSuite) TestShouldReturnListOutputCategory() {
+	useCase := find.NewFindCategoryUseCase(f.categoryService)
+	outputCategories, err := useCase.Execute(dto.InputFilterCategory{})
+	f.Assert().Nil(err)
+	f.Assert().Equal(3, len(outputCategories))
+}
 
-	_ = categoryServiceMock.Repo.Create(*category)
-	_ = categoryServiceMock.Repo.Create(*category2)
+func (f *FindCategoryUseCaseTestSuite) TestShouldFindCategoryUseCase() {
+	useCase := find.NewFindCategoryUseCase(f.categoryService)
+	outputCategories, err := useCase.Execute(dto.InputFilterCategory{})
 
-	category2.Inactivate()
-	_ = categoryServiceMock.Repo.Update(*category2)
+	var output dto.OutputCategory
 
-	useCase := find.NewFindCategoryUseCase(categoryServiceMock)
+	for i := range outputCategories {
+		if outputCategories[i].Name == "CategoryName1" {
+			output = outputCategories[i]
+		}
+
+	}
+
+	f.Assert().Nil(err)
+	f.Assert().Equal(3, len(outputCategories))
+	f.Assert().Equal("CategoryName1", output.Name)
+	f.Assert().Equal(2, output.SupplierTotal)
+}
+
+func (f *FindCategoryUseCaseTestSuite) TestShouldReturnListActiveCategoriesFindUseCase() {
+	category, _ := f.categoryService.Repo.Find("2")
+	category.Inactivate()
+	_ = f.categoryService.Repo.Update(*category)
+
+	useCase := find.NewFindCategoryUseCase(f.categoryService)
+
 	active := true
-	inputFilterCategory := find.InputFilterCategory{Active: &active}
-	outputCategories, err := useCase.Execute(inputFilterCategory)
-	assert.Nil(t, err)
-	assert.Equal(t, 1, len(outputCategories))
-	assert.Equal(t, name, outputCategories[0].Name)
+	outputCategories, err := useCase.Execute(dto.InputFilterCategory{Active: &active})
+
+	f.Assert().Nil(err)
+	f.Assert().Equal(2, len(outputCategories))
+}
+
+func TestSuiteFindCategoryUseCase(t *testing.T) {
+	suite.Run(t, &FindCategoryUseCaseTestSuite{})
 }

@@ -59,19 +59,15 @@ func (m *MyMockedCategoryRepository) FindByName(name string) (*entity.Category, 
 	return nil, nil
 }
 
-func (m *MyMockedCategoryRepository) FindAll(active *bool) ([]*entity.Category, error) {
-	output := make([]*entity.Category, 0)
+func (m *MyMockedCategoryRepository) FindAll(active *bool) ([]entity.Category, error) {
 	if active == nil {
-		for _, category := range m.DB {
-			output = append(output, &category)
-		}
-
-		return output, nil
+		return m.DB, nil
 	}
 
+	output := make([]entity.Category, 0)
 	for i := range m.DB {
 		if m.DB[i].GetStatus() == *active {
-			output = append(output, &m.DB[i])
+			output = append(output, m.DB[i])
 		}
 	}
 

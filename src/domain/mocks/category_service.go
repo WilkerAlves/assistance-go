@@ -4,15 +4,15 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/WilkerAlves/assistance-go/src/domain/dto"
 	"github.com/WilkerAlves/assistance-go/src/domain/entity"
-	"github.com/WilkerAlves/assistance-go/src/domain/interface/repository"
-	"github.com/WilkerAlves/assistance-go/src/domain/service"
+	"github.com/WilkerAlves/assistance-go/src/domain/interfaces"
 	"github.com/stretchr/testify/mock"
 )
 
 type MyMockedCategoryService struct {
 	mock.Mock
-	Repo repository.ICategoryRepository
+	Repo interfaces.ICategoryRepository
 }
 
 func (s *MyMockedCategoryService) Create(category entity.Category) error {
@@ -35,6 +35,6 @@ func (s *MyMockedCategoryService) GetById(id string) (*entity.Category, error) {
 func (s *MyMockedCategoryService) GetByName(name string) (*entity.Category, error) {
 	return nil, nil
 }
-func (s *MyMockedCategoryService) GetAll(filters *service.CategoryFiltersDTO) ([]*entity.Category, error) {
+func (s *MyMockedCategoryService) GetAll(filters *dto.CategoryFiltersDTO) ([]entity.Category, error) {
 	return s.Repo.FindAll(filters.Active)
 }

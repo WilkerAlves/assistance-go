@@ -4,28 +4,17 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/WilkerAlves/assistance-go/src/domain/dto"
 	"github.com/WilkerAlves/assistance-go/src/domain/entity"
-	"github.com/WilkerAlves/assistance-go/src/domain/interface/repository"
+	"github.com/WilkerAlves/assistance-go/src/domain/interfaces"
 )
 
 const (
 	MessageValidationCategoryName = "the category name already exists"
 )
 
-type ICategoryService interface {
-	Create(category entity.Category) error
-	Update(category entity.Category) error
-	GetById(id string) (*entity.Category, error)
-	GetByName(name string) (*entity.Category, error)
-	GetAll(filters *CategoryFiltersDTO) ([]*entity.Category, error)
-}
-
 type categoryService struct {
-	repo repository.ICategoryRepository
-}
-
-type CategoryFiltersDTO struct {
-	Active *bool
+	repo interfaces.ICategoryRepository
 }
 
 func (s *categoryService) Create(category entity.Category) error {
@@ -80,31 +69,25 @@ func (s *categoryService) GetByName(name string) (*entity.Category, error) {
 	return category, nil
 }
 
-func (s *categoryService) GetAll(filters *CategoryFiltersDTO) ([]*entity.Category, error) {
-	var categories []*entity.Category
+func (s *categoryService) GetAll(filters *dto.CategoryFiltersDTO) ([]entity.Category, error) {
+	var categories []entity.Category
 	var err error
 
 	if filters == nil {
 		categories, err = s.repo.FindAll(nil)
 		if err != nil {
-			return nil, err
+			return categories, err
 		}
 		return categories, nil
 	}
 
 	categories, err = s.repo.FindAll(filters.Active)
 	if err != nil {
-		return nil, err
+		return categories, err
 	}
 	return categories, nil
 }
 
-func NewCategoryService(repo repository.ICategoryRepository) *categoryService {
+func NewCategoryService(repo interfaces.ICategoryRepository) *categoryService {
 	return &categoryService{repo: repo}
-}
-
-func NewCategoryFiltersDTO(active *bool) *CategoryFiltersDTO {
-	return &CategoryFiltersDTO{
-		Active: active,
-	}
 }

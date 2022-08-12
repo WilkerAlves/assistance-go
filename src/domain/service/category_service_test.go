@@ -3,6 +3,7 @@ package service_test
 import (
 	"testing"
 
+	"github.com/WilkerAlves/assistance-go/src/domain/dto"
 	"github.com/WilkerAlves/assistance-go/src/domain/entity"
 	"github.com/WilkerAlves/assistance-go/src/domain/mocks"
 	"github.com/WilkerAlves/assistance-go/src/domain/service"
@@ -134,7 +135,7 @@ func TestShouldReturnListActiveCategories(t *testing.T) {
 	_ = categoryService.Update(*category2)
 
 	active := true
-	filters := service.NewCategoryFiltersDTO(&active)
+	filters := dto.NewCategoryFiltersDTO(&active)
 
 	categories, err := categoryService.GetAll(filters)
 	assert.Nil(t, err)

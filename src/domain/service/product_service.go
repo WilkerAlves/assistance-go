@@ -1,13 +1,15 @@
 package service
 
-import "github.com/WilkerAlves/assistance-go/src/domain/interface/repository"
+import (
+	"github.com/WilkerAlves/assistance-go/src/domain/interfaces"
+)
 
 type IProductService interface {
 	FindByCategoryID(categoryID string) ([]string, error)
 }
 
 type productService struct {
-	repo repository.IProductRepository
+	repo interfaces.IProductRepository
 }
 
 func (p *productService) FindByCategoryId(categoryID string) ([]string, error) {

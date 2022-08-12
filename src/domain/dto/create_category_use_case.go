@@ -1,4 +1,4 @@
-package create
+package dto
 
 type InputCrateCategory struct {
 	Name           string

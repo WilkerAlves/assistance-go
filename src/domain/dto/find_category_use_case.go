@@ -1,4 +1,4 @@
-package find
+package dto
 
 type OutputCategory struct {
 	Name          string

@@ -3,18 +3,18 @@ package create
 import (
 	"errors"
 
+	"github.com/WilkerAlves/assistance-go/src/domain/dto"
 	"github.com/WilkerAlves/assistance-go/src/domain/entity"
-	infra "github.com/WilkerAlves/assistance-go/src/domain/interface/service"
-	"github.com/WilkerAlves/assistance-go/src/domain/service"
+	"github.com/WilkerAlves/assistance-go/src/domain/interfaces"
 )
 
 type createCategoryUseCase struct {
-	eventService    infra.IEventService
-	categoryService service.ICategoryService
-	generateIds     infra.IGeneratedIds
+	eventService    interfaces.IEventService
+	categoryService interfaces.ICategoryService
+	generateIds     interfaces.IGeneratedIds
 }
 
-func (c *createCategoryUseCase) Execute(input InputCrateCategory) error {
+func (c *createCategoryUseCase) Execute(input dto.InputCrateCategory) error {
 
 	id, err := c.generateIds.Create()
 	if err != nil {
@@ -38,7 +38,7 @@ func (c *createCategoryUseCase) Execute(input InputCrateCategory) error {
 	return nil
 }
 
-func NewCreateCategoryUseCase(es infra.IEventService, cs service.ICategoryService, gIds infra.IGeneratedIds) *createCategoryUseCase {
+func NewCreateCategoryUseCase(es interfaces.IEventService, cs interfaces.ICategoryService, gIds interfaces.IGeneratedIds) *createCategoryUseCase {
 	return &createCategoryUseCase{
 		eventService:    es,
 		categoryService: cs,

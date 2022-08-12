@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+
+	"github.com/WilkerAlves/assistance-go/src/domain/dto"
 )
 
 const (
@@ -69,7 +71,7 @@ func (c *Category) Inactivate() {
 
 // Subcategories
 
-func (c *Category) GetSubcategories(filters *SubCategoryFiltersDTO) map[string]*Subcategory {
+func (c *Category) GetSubcategories(filters *dto.SubCategoryFiltersDTO) map[string]*Subcategory {
 	if filters == nil {
 		return c.subcategories
 	}
@@ -77,7 +79,7 @@ func (c *Category) GetSubcategories(filters *SubCategoryFiltersDTO) map[string]*
 	subcategories := make(map[string]*Subcategory, 0)
 
 	for _, subcategory := range c.subcategories {
-		if subcategory.GetStatus() == *filters.active {
+		if subcategory.GetStatus() == *filters.Active {
 			subcategories[subcategory.category.GetID()] = subcategory
 		}
 	}

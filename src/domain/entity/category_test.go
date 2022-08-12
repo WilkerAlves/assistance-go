@@ -3,6 +3,7 @@ package entity_test
 import (
 	"testing"
 
+	"github.com/WilkerAlves/assistance-go/src/domain/dto"
 	"github.com/WilkerAlves/assistance-go/src/domain/entity"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -289,7 +290,7 @@ func TestShouldReturnListActiveSubcategories(t *testing.T) {
 	_ = category.InactivateSubCategory(category3ID)
 
 	active := true
-	filters := entity.NewSubCategoryFiltersDTO(&active)
+	filters := dto.NewSubCategoryFiltersDTO(&active)
 
 	subcategories := category.GetSubcategories(filters)
 	assert.Equal(t, 1, len(subcategories))
