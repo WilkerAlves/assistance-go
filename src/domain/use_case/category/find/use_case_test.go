@@ -7,43 +7,12 @@ import (
 
 	"github.com/WilkerAlves/assistance-go/src/domain/entity"
 	"github.com/WilkerAlves/assistance-go/src/domain/interface/repository"
+	"github.com/WilkerAlves/assistance-go/src/domain/mocks"
 	"github.com/WilkerAlves/assistance-go/src/domain/use_case/category/find"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
-
-type MyMockedCategoryRepository struct {
-	mock.Mock
-	DB []entity.Category
-}
-
-func (m *MyMockedCategoryRepository) Create(category entity.Category) error {
-	m.DB = append(m.DB, category)
-	return nil
-}
-func (m *MyMockedCategoryRepository) Update(category entity.Category) error {
-	return nil
-}
-func (m *MyMockedCategoryRepository) Find(id string) (*entity.Category, error) {
-	return nil, nil
-}
-func (m *MyMockedCategoryRepository) FindByName(name string) (*entity.Category, error) {
-	for _, category := range m.DB {
-		if category.GetName() == name {
-			return &category, nil
-		}
-	}
-	return nil, nil
-}
-func (m *MyMockedCategoryRepository) FindAll() ([]*entity.Category, error) {
-	output := make([]*entity.Category, 0)
-	for _, category := range m.DB {
-		output = append(output, &category)
-	}
-
-	return output, nil
-}
 
 type MyMockedCategoryService struct {
 	mock.Mock
@@ -75,7 +44,7 @@ func (s *MyMockedCategoryService) GetAll() ([]*entity.Category, error) {
 }
 
 func TestShouldReturnListOutputCategory(t *testing.T) {
-	repositoryMock := new(MyMockedCategoryRepository)
+	repositoryMock := new(mocks.MyMockedCategoryRepository)
 	categoryServiceMock := new(MyMockedCategoryService)
 	categoryServiceMock.Repo = repositoryMock
 
@@ -96,7 +65,7 @@ func TestShouldReturnListOutputCategory(t *testing.T) {
 }
 
 func TestCreateCategoryUseCase_Execute(t *testing.T) {
-	repositoryMock := new(MyMockedCategoryRepository)
+	repositoryMock := new(mocks.MyMockedCategoryRepository)
 	categoryServiceMock := new(MyMockedCategoryService)
 	categoryServiceMock.Repo = repositoryMock
 
