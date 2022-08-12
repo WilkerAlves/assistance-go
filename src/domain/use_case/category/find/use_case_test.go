@@ -1,51 +1,18 @@
 package find_test
 
 import (
-	"errors"
-	"fmt"
 	"testing"
 
 	"github.com/WilkerAlves/assistance-go/src/domain/entity"
-	"github.com/WilkerAlves/assistance-go/src/domain/interface/repository"
 	"github.com/WilkerAlves/assistance-go/src/domain/mocks"
 	"github.com/WilkerAlves/assistance-go/src/domain/use_case/category/find"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 )
-
-type MyMockedCategoryService struct {
-	mock.Mock
-	Repo repository.ICategoryRepository
-}
-
-func (s *MyMockedCategoryService) Create(category entity.Category) error {
-	if cat, _ := s.Repo.FindByName(category.GetName()); cat != nil {
-		return errors.New("the category name already exists")
-	}
-
-	err := s.Repo.Create(category)
-	if err != nil {
-		return fmt.Errorf("error while create category, %w", err)
-	}
-	return nil
-}
-func (s *MyMockedCategoryService) Update(category entity.Category) error {
-	return nil
-}
-func (s *MyMockedCategoryService) GetById(id string) (*entity.Category, error) {
-	return nil, nil
-}
-func (s *MyMockedCategoryService) GetByName(name string) (*entity.Category, error) {
-	return nil, nil
-}
-func (s *MyMockedCategoryService) GetAll() ([]*entity.Category, error) {
-	return s.Repo.FindAll()
-}
 
 func TestShouldReturnListOutputCategory(t *testing.T) {
 	repositoryMock := new(mocks.MyMockedCategoryRepository)
-	categoryServiceMock := new(MyMockedCategoryService)
+	categoryServiceMock := new(mocks.MyMockedCategoryService)
 	categoryServiceMock.Repo = repositoryMock
 
 	id := uuid.New().String()
@@ -66,7 +33,7 @@ func TestShouldReturnListOutputCategory(t *testing.T) {
 
 func TestCreateCategoryUseCase_Execute(t *testing.T) {
 	repositoryMock := new(mocks.MyMockedCategoryRepository)
-	categoryServiceMock := new(MyMockedCategoryService)
+	categoryServiceMock := new(mocks.MyMockedCategoryService)
 	categoryServiceMock.Repo = repositoryMock
 
 	id := uuid.New().String()

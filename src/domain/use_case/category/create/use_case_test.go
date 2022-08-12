@@ -1,12 +1,8 @@
 package create_test
 
 import (
-	"errors"
-	"fmt"
 	"testing"
 
-	"github.com/WilkerAlves/assistance-go/src/domain/entity"
-	"github.com/WilkerAlves/assistance-go/src/domain/interface/repository"
 	"github.com/WilkerAlves/assistance-go/src/domain/mocks"
 	"github.com/WilkerAlves/assistance-go/src/domain/use_case/category/create"
 	"github.com/stretchr/testify/assert"
@@ -21,35 +17,6 @@ func (m *MyMockedEventService) Send(eventName string, body interface{}) bool {
 	return true
 }
 
-type MyMockedCategoryService struct {
-	mock.Mock
-	Repo repository.ICategoryRepository
-}
-
-func (s *MyMockedCategoryService) Create(category entity.Category) error {
-	if cat, _ := s.Repo.FindByName(category.GetName()); cat != nil {
-		return errors.New("the category name already exists")
-	}
-
-	err := s.Repo.Create(category)
-	if err != nil {
-		return fmt.Errorf("error while create category, %w", err)
-	}
-	return nil
-}
-func (s *MyMockedCategoryService) Update(category entity.Category) error {
-	return nil
-}
-func (s *MyMockedCategoryService) GetById(id string) (*entity.Category, error) {
-	return nil, nil
-}
-func (s *MyMockedCategoryService) GetByName(name string) (*entity.Category, error) {
-	return nil, nil
-}
-func (s *MyMockedCategoryService) GetAll() ([]*entity.Category, error) {
-	return nil, nil
-}
-
 type MyMockedGeneratedIdsService struct {
 	mock.Mock
 }
@@ -61,7 +28,7 @@ func (m *MyMockedGeneratedIdsService) Create() (string, error) {
 func TestCreateCategoryUseCase_Execute(t *testing.T) {
 	repositoryMock := new(mocks.MyMockedCategoryRepository)
 	eventServiceMock := new(MyMockedEventService)
-	categoryServiceMock := new(MyMockedCategoryService)
+	categoryServiceMock := new(mocks.MyMockedCategoryService)
 	generatedIdsServiceMock := new(MyMockedGeneratedIdsService)
 	categoryServiceMock.Repo = repositoryMock
 
@@ -83,7 +50,7 @@ func TestCreateCategoryUseCase_Execute(t *testing.T) {
 func TestCreateCategoryUseCase_Execute_ShouldReturnErrorWhenCategoryNameInvalid(t *testing.T) {
 	repositoryMock := new(mocks.MyMockedCategoryRepository)
 	eventServiceMock := new(MyMockedEventService)
-	categoryServiceMock := new(MyMockedCategoryService)
+	categoryServiceMock := new(mocks.MyMockedCategoryService)
 	generatedIdsServiceMock := new(MyMockedGeneratedIdsService)
 	categoryServiceMock.Repo = repositoryMock
 
