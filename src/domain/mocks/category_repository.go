@@ -5,11 +5,9 @@ import (
 	"fmt"
 
 	"github.com/WilkerAlves/assistance-go/src/domain/entity"
-	"github.com/stretchr/testify/mock"
 )
 
 type MyMockedCategoryRepository struct {
-	mock.Mock
 	DB []entity.Category
 }
 
