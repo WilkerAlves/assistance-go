@@ -5,20 +5,31 @@ import (
 
 	"github.com/WilkerAlves/assistance-go/src/domain/mocks"
 	"github.com/WilkerAlves/assistance-go/src/domain/use_case/category/create"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 )
 
-func TestCreateCategoryUseCase_Execute(t *testing.T) {
-	repositoryMock := new(mocks.MyMockedCategoryRepository)
-	eventServiceMock := new(mocks.MyMockedEventService)
-	categoryServiceMock := new(mocks.MyMockedCategoryService)
-	generatedIdsServiceMock := new(mocks.MyMockedGeneratedIdsService)
-	categoryServiceMock.Repo = repositoryMock
+type CreateCategoryUseCaseTestSuite struct {
+	suite.Suite
+	eventService    *mocks.MyMockedEventService
+	categoryService *mocks.MyMockedCategoryService
+	generateIds     *mocks.MyMockedGeneratedIdsService
+}
 
-	useCase := new(create.CreateCategoryUseCase)
-	useCase.CategoryService = categoryServiceMock
-	useCase.EventService = eventServiceMock
-	useCase.GenerateIds = generatedIdsServiceMock
+func (c *CreateCategoryUseCaseTestSuite) SetupTest() {
+	c.eventService = new(mocks.MyMockedEventService)
+	c.generateIds = new(mocks.MyMockedGeneratedIdsService)
+	c.categoryService = new(mocks.MyMockedCategoryService)
+
+	repositoryMock := new(mocks.MyMockedCategoryRepository)
+	c.categoryService.Repo = repositoryMock
+}
+
+func (c *CreateCategoryUseCaseTestSuite) TestShouldNotReturnErrorWhenCreateCreateWithAllFieldsValid() {
+	useCase := create.NewCreateCategoryUseCase(
+		c.eventService,
+		c.categoryService,
+		c.generateIds,
+	)
 
 	input := create.InputCrateCategory{
 		Name:           "CategoryUseCase",
@@ -27,20 +38,15 @@ func TestCreateCategoryUseCase_Execute(t *testing.T) {
 
 	err := useCase.Execute(input)
 
-	assert.Nil(t, err)
+	c.Assert().Nil(err)
 }
 
-func TestCreateCategoryUseCase_Execute_ShouldReturnErrorWhenCategoryNameInvalid(t *testing.T) {
-	repositoryMock := new(mocks.MyMockedCategoryRepository)
-	eventServiceMock := new(mocks.MyMockedEventService)
-	categoryServiceMock := new(mocks.MyMockedCategoryService)
-	generatedIdsServiceMock := new(mocks.MyMockedGeneratedIdsService)
-	categoryServiceMock.Repo = repositoryMock
-
-	useCase := new(create.CreateCategoryUseCase)
-	useCase.CategoryService = categoryServiceMock
-	useCase.EventService = eventServiceMock
-	useCase.GenerateIds = generatedIdsServiceMock
+func (c *CreateCategoryUseCaseTestSuite) TestShouldReturnErrorWhenAttemptCreateCategoryWithNameInvalid() {
+	useCase := create.NewCreateCategoryUseCase(
+		c.eventService,
+		c.categoryService,
+		c.generateIds,
+	)
 
 	inputCorrect := create.InputCrateCategory{
 		Name:           "CategoryUseCase",
@@ -56,13 +62,18 @@ func TestCreateCategoryUseCase_Execute_ShouldReturnErrorWhenCategoryNameInvalid(
 	}
 
 	err := useCase.Execute(inputCorrect)
-	assert.Nil(t, err)
+	c.Assert().Nil(err)
 
 	err = useCase.Execute(inputNameInvalid)
-	assert.NotNil(t, err)
-	assert.EqualError(t, err, "the category name is empty")
+	c.Assert().NotNil(err)
+	c.Assert().EqualError(err, "the category name is empty")
 
 	err = useCase.Execute(inputNameAlreadyExists)
-	assert.NotNil(t, err)
-	assert.EqualError(t, err, "the category name already exists")
+	c.Assert().NotNil(err)
+	c.Assert().EqualError(err, "the category name already exists")
+
+}
+
+func TestSuiteCreateCategoryUseCase(t *testing.T) {
+	suite.Run(t, &CreateCategoryUseCaseTestSuite{})
 }

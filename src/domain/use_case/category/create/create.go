@@ -8,15 +8,15 @@ import (
 	"github.com/WilkerAlves/assistance-go/src/domain/service"
 )
 
-type CreateCategoryUseCase struct {
-	EventService    infra.IEventService
-	CategoryService service.ICategoryService
-	GenerateIds     infra.IGeneratedIds
+type createCategoryUseCase struct {
+	eventService    infra.IEventService
+	categoryService service.ICategoryService
+	generateIds     infra.IGeneratedIds
 }
 
-func (c *CreateCategoryUseCase) Execute(input InputCrateCategory) error {
+func (c *createCategoryUseCase) Execute(input InputCrateCategory) error {
 
-	id, err := c.GenerateIds.Create()
+	id, err := c.generateIds.Create()
 	if err != nil {
 		return err
 	}
@@ -26,14 +26,22 @@ func (c *CreateCategoryUseCase) Execute(input InputCrateCategory) error {
 		return err
 	}
 
-	err = c.CategoryService.Create(*category)
+	err = c.categoryService.Create(*category)
 	if err != nil {
 		return err
 	}
 
-	if !c.EventService.Send("CREATE_CATEGORY", category) {
+	if !c.eventService.Send("CREATE_CATEGORY", category) {
 		return errors.New("error while dispatch event")
 	}
 
 	return nil
+}
+
+func NewCreateCategoryUseCase(es infra.IEventService, cs service.ICategoryService, gIds infra.IGeneratedIds) *createCategoryUseCase {
+	return &createCategoryUseCase{
+		eventService:    es,
+		categoryService: cs,
+		generateIds:     gIds,
+	}
 }
