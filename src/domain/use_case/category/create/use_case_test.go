@@ -1,18 +1,95 @@
 package create_test
 
 import (
+	"errors"
+	"fmt"
+	"github.com/WilkerAlves/assistance-go/src/domain/service"
 	"testing"
 
-	"github.com/WilkerAlves/assistance-go/src/domain/mocks"
+	"github.com/WilkerAlves/assistance-go/src/domain/entity"
+	"github.com/WilkerAlves/assistance-go/src/domain/interface/repository"
 	"github.com/WilkerAlves/assistance-go/src/domain/use_case/category/create"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
+type MyMockedCategoryRepository struct {
+	mock.Mock
+	DB []entity.Category
+}
+
+func (m *MyMockedCategoryRepository) Create(category entity.Category) error {
+	m.DB = append(m.DB, category)
+	return nil
+}
+func (m *MyMockedCategoryRepository) Update(category entity.Category) error {
+	return nil
+}
+func (m *MyMockedCategoryRepository) Find(id string) (*entity.Category, error) {
+	return nil, nil
+}
+func (m *MyMockedCategoryRepository) FindByName(name string) (*entity.Category, error) {
+	for _, category := range m.DB {
+		if category.GetName() == name {
+			return &category, nil
+		}
+	}
+	return nil, nil
+}
+func (m *MyMockedCategoryRepository) FindAll(active *bool) ([]*entity.Category, error) {
+	return nil, nil
+}
+
+type MyMockedEventService struct {
+	mock.Mock
+}
+
+func (m *MyMockedEventService) Send(eventName string, body interface{}) bool {
+	return true
+}
+
+type MyMockedCategoryService struct {
+	mock.Mock
+	Repo repository.ICategoryRepository
+}
+
+func (s *MyMockedCategoryService) Create(category entity.Category) error {
+	if cat, _ := s.Repo.FindByName(category.GetName()); cat != nil {
+		return errors.New("the category name already exists")
+	}
+
+	err := s.Repo.Create(category)
+	if err != nil {
+		return fmt.Errorf("error while create category, %w", err)
+	}
+	return nil
+}
+func (s *MyMockedCategoryService) Update(category entity.Category) error {
+	return nil
+}
+func (s *MyMockedCategoryService) GetById(id string) (*entity.Category, error) {
+	return nil, nil
+}
+func (s *MyMockedCategoryService) GetByName(name string) (*entity.Category, error) {
+	return nil, nil
+}
+func (s *MyMockedCategoryService) GetAll(filters *service.CategoryFiltersDTO) ([]*entity.Category, error) {
+	return nil, nil
+}
+
+type MyMockedGeneratedIdsService struct {
+	mock.Mock
+}
+
+func (m *MyMockedGeneratedIdsService) Create() (string, error) {
+	return "12345677", nil
+}
+
 func TestCreateCategoryUseCase_Execute(t *testing.T) {
-	repositoryMock := new(mocks.MyMockedCategoryRepository)
-	eventServiceMock := new(mocks.MyMockedEventService)
-	categoryServiceMock := new(mocks.MyMockedCategoryService)
-	generatedIdsServiceMock := new(mocks.MyMockedGeneratedIdsService)
+	repositoryMock := new(MyMockedCategoryRepository)
+	eventServiceMock := new(MyMockedEventService)
+	categoryServiceMock := new(MyMockedCategoryService)
+	generatedIdsServiceMock := new(MyMockedGeneratedIdsService)
 	categoryServiceMock.Repo = repositoryMock
 
 	useCase := new(create.CreateCategoryUseCase)
@@ -31,10 +108,10 @@ func TestCreateCategoryUseCase_Execute(t *testing.T) {
 }
 
 func TestCreateCategoryUseCase_Execute_ShouldReturnErrorWhenCategoryNameInvalid(t *testing.T) {
-	repositoryMock := new(mocks.MyMockedCategoryRepository)
-	eventServiceMock := new(mocks.MyMockedEventService)
-	categoryServiceMock := new(mocks.MyMockedCategoryService)
-	generatedIdsServiceMock := new(mocks.MyMockedGeneratedIdsService)
+	repositoryMock := new(MyMockedCategoryRepository)
+	eventServiceMock := new(MyMockedEventService)
+	categoryServiceMock := new(MyMockedCategoryService)
+	generatedIdsServiceMock := new(MyMockedGeneratedIdsService)
 	categoryServiceMock.Repo = repositoryMock
 
 	useCase := new(create.CreateCategoryUseCase)

@@ -17,11 +17,15 @@ type ICategoryService interface {
 	Update(category entity.Category) error
 	GetById(id string) (*entity.Category, error)
 	GetByName(name string) (*entity.Category, error)
-	GetAll() ([]*entity.Category, error)
+	GetAll(filters *CategoryFiltersDTO) ([]*entity.Category, error)
 }
 
 type categoryService struct {
 	repo repository.ICategoryRepository
+}
+
+type CategoryFiltersDTO struct {
+	Active *bool
 }
 
 func (s *categoryService) Create(category entity.Category) error {
@@ -76,14 +80,31 @@ func (s *categoryService) GetByName(name string) (*entity.Category, error) {
 	return category, nil
 }
 
-func (s *categoryService) GetAll() ([]*entity.Category, error) {
-	category, err := s.repo.FindAll()
+func (s *categoryService) GetAll(filters *CategoryFiltersDTO) ([]*entity.Category, error) {
+	var categories []*entity.Category
+	var err error
+
+	if filters == nil {
+		categories, err = s.repo.FindAll(nil)
+		if err != nil {
+			return nil, err
+		}
+		return categories, nil
+	}
+
+	categories, err = s.repo.FindAll(filters.Active)
 	if err != nil {
 		return nil, err
 	}
-	return category, nil
+	return categories, nil
 }
 
 func NewCategoryService(repo repository.ICategoryRepository) *categoryService {
 	return &categoryService{repo: repo}
+}
+
+func NewCategoryFiltersDTO(active *bool) *CategoryFiltersDTO {
+	return &CategoryFiltersDTO{
+		Active: active,
+	}
 }

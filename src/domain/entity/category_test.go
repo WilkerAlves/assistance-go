@@ -17,7 +17,7 @@ func TestShouldCreateCategory(t *testing.T) {
 	assert.Equal(t, id, category.GetID())
 	assert.Equal(t, "Categoria1", category.GetName())
 	assert.Equal(t, "sale", category.GetAssistanceType())
-	assert.Equal(t, 0, len(category.GetSubcategories()))
+	assert.Equal(t, 0, len(category.GetSubcategories(nil)))
 }
 
 func TestShouldCreateCategoryWhenNotID(t *testing.T) {
@@ -26,7 +26,7 @@ func TestShouldCreateCategoryWhenNotID(t *testing.T) {
 	assert.Equal(t, "", category.GetID())
 	assert.Equal(t, "Categoria1", category.GetName())
 	assert.Equal(t, "sale", category.GetAssistanceType())
-	assert.Equal(t, 0, len(category.GetSubcategories()))
+	assert.Equal(t, 0, len(category.GetSubcategories(nil)))
 }
 
 func TestShouldReturnErrorWhenCreateCategoryNameEmpty(t *testing.T) {
@@ -65,7 +65,7 @@ func TestShouldAddSubcategory(t *testing.T) {
 	err := category.AddSubcategory(*subcategory)
 
 	assert.Nil(t, err)
-	assert.Equal(t, 1, len(category.GetSubcategories()))
+	assert.Equal(t, 1, len(category.GetSubcategories(nil)))
 }
 
 func TestShouldReturnErrorWhenAddSubcategoryWithNameAlreadyExists(t *testing.T) {
@@ -76,14 +76,14 @@ func TestShouldReturnErrorWhenAddSubcategoryWithNameAlreadyExists(t *testing.T) 
 	err := category.AddSubcategory(*subcategory)
 
 	assert.Nil(t, err)
-	assert.Equal(t, 1, len(category.GetSubcategories()))
+	assert.Equal(t, 1, len(category.GetSubcategories(nil)))
 
 	subcategory2, _ := entity.NewCategory("Subcategoria1", "paid", StockGroup, &id)
 	err = category.AddSubcategory(*subcategory2)
 
 	assert.NotNil(t, err)
 	assert.EqualError(t, err, "already exists a subcategory with this name")
-	assert.Equal(t, 1, len(category.GetSubcategories()))
+	assert.Equal(t, 1, len(category.GetSubcategories(nil)))
 }
 
 func TestShouldUpdateNameCategory(t *testing.T) {
@@ -143,7 +143,7 @@ func TestShouldReturnErrorWhenUpdateAssistanceTypeInvalid(t *testing.T) {
 
 func TestShouldBindBetweenSupplierIdAndCategory(t *testing.T) {
 	category, _ := entity.NewCategory("Categoria1", "sale", StockGroup, nil)
-	assert.Equal(t, len(category.GetSubcategories()), 0)
+	assert.Equal(t, len(category.GetSubcategories(nil)), 0)
 
 	supplierId := "001756"
 
@@ -155,10 +155,10 @@ func TestShouldBindBetweenSupplierIdAndCategory(t *testing.T) {
 
 func TestShouldBindBetweenSupplierIdAndCategories(t *testing.T) {
 	category, _ := entity.NewCategory("Categoria1", "sale", StockGroup, nil)
-	assert.Equal(t, len(category.GetSubcategories()), 0)
+	assert.Equal(t, len(category.GetSubcategories(nil)), 0)
 
 	category2, _ := entity.NewCategory("Categoria2", "sale", StockGroup, nil)
-	assert.Equal(t, len(category2.GetSubcategories()), 0)
+	assert.Equal(t, len(category2.GetSubcategories(nil)), 0)
 
 	supplierId := "001756"
 
@@ -185,12 +185,12 @@ func TestShouldRemoveSubcategory(t *testing.T) {
 	subcategory2, _ := entity.NewCategory("Subcategoria2", "paid", StockGroup, &sub2ID)
 	err = category.AddSubcategory(*subcategory2)
 
-	assert.Equal(t, 2, len(category.GetSubcategories()))
+	assert.Equal(t, 2, len(category.GetSubcategories(nil)))
 
 	err = category.RemoveSubcategory(*subcategory2)
 	assert.Nil(t, err)
 
-	assert.Equal(t, 1, len(category.GetSubcategories()))
+	assert.Equal(t, 1, len(category.GetSubcategories(nil)))
 
 	res, err := category.GetSubcategory(sub1ID)
 	assert.Nil(t, err)
@@ -272,4 +272,28 @@ func TestShouldChangedStockGroupSubcategory(t *testing.T) {
 
 	subcategory, _ = category.GetSubcategory(category2ID)
 	assert.Equal(t, "1234", subcategory.GetStockGroup())
+}
+
+func TestShouldReturnListActiveSubcategories(t *testing.T) {
+	categoryID := uuid.New().String()
+	category2ID := uuid.New().String()
+	category3ID := uuid.New().String()
+
+	category, _ := entity.NewCategory("Categoria1", "sale", StockGroup, &categoryID)
+	category2, _ := entity.NewCategory("Categoria2", "paid", StockGroup, &category2ID)
+	category3, _ := entity.NewCategory("Categoria3", "paid", StockGroup, &category3ID)
+
+	_ = category.AddSubcategory(*category2)
+	_ = category.AddSubcategory(*category3)
+
+	_ = category.InactivateSubCategory(category3ID)
+
+	active := true
+	filters := entity.NewSubCategoryFiltersDTO(&active)
+
+	subcategories := category.GetSubcategories(filters)
+	assert.Equal(t, 1, len(subcategories))
+	assert.Equal(t, true, subcategories[category2ID].GetStatus())
+	assert.Equal(t, "Categoria2", subcategories[category2ID].GetName())
+
 }
