@@ -1,24 +1,24 @@
-package find_test
+package use_case_test
 
 import (
 	"testing"
 
 	"github.com/WilkerAlves/assistance-go/src/domain/dto"
 	"github.com/WilkerAlves/assistance-go/src/domain/entity"
-	"github.com/WilkerAlves/assistance-go/src/domain/mocks"
 	"github.com/WilkerAlves/assistance-go/src/domain/use_case/category/find"
+	mocks2 "github.com/WilkerAlves/assistance-go/tests/mocks"
 	"github.com/stretchr/testify/suite"
 )
 
 type FindCategoryUseCaseTestSuite struct {
 	suite.Suite
-	categoryService *mocks.MyMockedCategoryService
+	categoryService *mocks2.MyMockedCategoryService
 }
 
 func (f *FindCategoryUseCaseTestSuite) SetupTest() {
-	f.categoryService = new(mocks.MyMockedCategoryService)
+	f.categoryService = new(mocks2.MyMockedCategoryService)
 
-	repositoryMock := new(mocks.MyMockedCategoryRepository)
+	repositoryMock := new(mocks2.MyMockedCategoryRepository)
 	f.categoryService.Repo = repositoryMock
 
 	id := "1"

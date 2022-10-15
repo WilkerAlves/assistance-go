@@ -5,8 +5,8 @@ import (
 
 	"github.com/WilkerAlves/assistance-go/src/domain/dto"
 	"github.com/WilkerAlves/assistance-go/src/domain/entity"
-	"github.com/WilkerAlves/assistance-go/src/domain/mocks"
 	"github.com/WilkerAlves/assistance-go/src/domain/service"
+	"github.com/WilkerAlves/assistance-go/tests/mocks"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )

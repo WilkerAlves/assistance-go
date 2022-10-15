@@ -4,10 +4,6 @@ import (
 	"github.com/WilkerAlves/assistance-go/src/domain/interfaces"
 )
 
-type IProductService interface {
-	FindByCategoryID(categoryID string) ([]string, error)
-}
-
 type productService struct {
 	repo interfaces.IProductRepository
 }
